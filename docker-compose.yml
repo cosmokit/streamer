@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./docker/backend
+      dockerfile: Dockerfile
+    container_name: streamer_backend
+    working_dir: /var/www/backend
+    volumes:
+      - ./backend:/var/www/backend
+    environment:
+      - PHP_IDE_CONFIG=serverName=streamer
+    depends_on:
+      - db
+    networks:
+      - streamer_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: streamer_nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend:/var/www/backend
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+    networks:
+      - streamer_network
+
+  db:
+    image: mariadb:11
+    container_name: streamer_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: streamer
+      MYSQL_USER: streamer
+      MYSQL_PASSWORD: streamer
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - streamer_network
+
+  node:
+    image: node:20-alpine
+    container_name: streamer_node
+    working_dir: /var/www/frontend
+    volumes:
+      - ./frontend:/var/www/frontend
+    command: tail -f /dev/null
+    networks:
+      - streamer_network
+
+volumes:
+  db_data:
+
+networks:
+  streamer_network:
+    driver: bridge
