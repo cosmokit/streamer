@@ -166,7 +166,7 @@ class DatabaseSeeder extends Seeder
         HelpArticle::create([
             'tag' => 'main',
             'title' => 'Поддержка в Telegram',
-            'body' => 'Свяжитесь с @vladis1av_esipenko для получения помощи.',
+            'body' => 'Свяжитесь с технической поддержкой для получения помощи.',
             'sort_order' => 6,
         ]);
     }

@@ -5,11 +5,16 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\HelpArticleController;
 use App\Http\Controllers\Admin\TemplateController as AdminTemplateController;
+use App\Http\Controllers\Admin\AdminAuthController;
 
-// Breeze auth routes
-require __DIR__.'/auth.php';
+// Admin auth routes (отдельные от юзерских!)
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('login', [AdminAuthController::class, 'showLogin'])->name('login');
+    Route::post('login', [AdminAuthController::class, 'login'])->name('login.post');
+    Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
+});
 
-// Admin routes
+// Admin panel routes (защищены auth + admin middleware)
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
@@ -20,7 +25,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::resource('templates', AdminTemplateController::class);
 });
 
-// SPA fallback - отдаём frontend для всех маршрутов кроме /api, /admin, /login, /register
+// SPA fallback - отдаём React frontend для всех остальных маршрутов
 Route::get('/{any}', function () {
     return file_get_contents(public_path('app/index.html'));
-})->where('any', '^(?!api|admin|login|register|logout|password).*$');
+})->where('any', '^(?!api|admin).*$');

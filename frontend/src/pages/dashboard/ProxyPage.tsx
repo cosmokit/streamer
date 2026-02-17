@@ -41,11 +41,11 @@ const ProxyPage = () => {
 
       <div className="glass-card rounded-xl p-6 mt-8">
         <h3 className="font-semibold mb-1" style={{ color: "hsl(260 20% 90%)" }}>Нужна помощь с активацией прокси?</h3>
-        <p className="text-sm mb-4" style={{ color: "hsl(260 15% 50%)" }}>Свяжитесь с @vladis1av_esipenko в Telegram для активации прокси и поддержки.</p>
-        <a href="https://t.me/vladis1av_esipenko" target="_blank" rel="noopener noreferrer"
+        <p className="text-sm mb-4" style={{ color: "hsl(260 15% 50%)" }}>Свяжитесь с технической поддержкой для активации прокси и получения помощи.</p>
+        <a href="https://t.me/profitstream_support" target="_blank" rel="noopener noreferrer"
           className="inline-block px-5 py-2.5 rounded-lg text-sm font-medium transition-all"
           style={{ background: "hsl(270 25% 14%)", color: "hsl(260 15% 75%)", border: "1px solid hsl(270 25% 22%)" }}>
-          Связаться с @vladis1av_esipenko
+          Связаться с поддержкой
         </a>
       </div>
 

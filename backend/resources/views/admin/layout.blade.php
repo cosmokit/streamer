@@ -111,12 +111,12 @@
                 <a href="/" class="nav-link">
                     <i class="bi bi-house"></i> На сайт
                 </a>
-                <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                    @csrf
-                    <button type="submit" class="nav-link border-0 bg-transparent text-start w-100">
-                        <i class="bi bi-box-arrow-right"></i> Выход
-                    </button>
-                </form>
+            <form method="POST" action="{{ route('admin.logout') }}" class="d-inline">
+                @csrf
+                <button type="submit" class="nav-link border-0 bg-transparent text-start w-100">
+                    <i class="bi bi-box-arrow-right"></i> Выход
+                </button>
+            </form>
             </nav>
         </div>
 

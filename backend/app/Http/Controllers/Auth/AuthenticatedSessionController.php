@@ -28,11 +28,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // Redirect admin to admin panel, others to home
-        if (Auth::user()->is_admin) {
-            return redirect()->intended(route("admin.dashboard", absolute: false));
-        }
-        
+        // Это роут ТОЛЬКО для юзеров через Laravel Breeze
+        // Админы используют /admin/login
         return redirect()->intended("/");
     }
 
