@@ -49,7 +49,7 @@ const DashboardLayout = () => {
       <div className="text-[10px] uppercase tracking-widest px-5 pb-3 font-semibold" style={{ color: "hsl(270 15% 35%)" }}>
         Platform
       </div>
-      <nav className="flex flex-col gap-1 px-3 flex-1">
+      <nav className="flex flex-col gap-1 px-3 flex-1 min-h-0 overflow-y-auto">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
@@ -74,7 +74,7 @@ const DashboardLayout = () => {
           </NavLink>
         ))}
       </nav>
-      <div className="mx-5 mb-4 mt-4">
+      <div className="mx-5 mb-4 mt-4 flex-shrink-0">
         <div className="h-px mb-4" style={{
           background: "linear-gradient(90deg, transparent, hsl(90 85% 45% / 0.3), hsl(270 75% 50% / 0.3), transparent)"
         }} />
