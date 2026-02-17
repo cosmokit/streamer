@@ -18,12 +18,12 @@ const DashboardLayout = () => {
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
-      <div className="px-5 py-5 flex items-center gap-3">
+      <NavLink to="/" className="px-5 py-5 flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer" onClick={() => setMobileOpen(false)}>
         <img src={logo} alt="PS Logo" className="w-10 h-10 object-contain" />
         <span className="text-base font-bold tracking-wide" style={{ color: "hsl(270 75% 75%)" }}>
           PROFIT<span style={{ color: "hsl(90 85% 55%)" }}>STREAM</span>
         </span>
-      </div>
+      </NavLink>
       {/* Profile at top */}
       <NavLink
         to="/dashboard/profile"
