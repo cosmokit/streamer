@@ -16,26 +16,45 @@ const LoginPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       toast({ title: "Ошибка", description: "Заполните все поля", variant: "destructive" });
       return;
     }
-    if (password.length < 6) {
-      toast({ title: "Неверный пароль", description: "Пароль должен содержать минимум 6 символов", variant: "destructive" });
-      return;
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userEmail", email);
+        toast({ title: "Добро пожаловать!", description: data.message || "Вы успешно вошли в систему" });
+        navigate("/dashboard/progress");
+      } else {
+        toast({ 
+          title: "Ошибка авторизации", 
+          description: data.message || "Неверный email или пароль", 
+          variant: "destructive" 
+        });
+      }
+    } catch (error) {
+      toast({ 
+        title: "Ошибка", 
+        description: "Не удалось подключиться к серверу", 
+        variant: "destructive" 
+      });
     }
-    // Mock: accept any valid-looking credentials
-    if (email === "wrong@test.com") {
-      toast({ title: "Ошибка авторизации", description: "Неверный email или пароль. Попробуйте снова.", variant: "destructive" });
-      return;
-    }
-    // Save auth to localStorage
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userEmail", email);
-    toast({ title: "Добро пожаловать!", description: "Вы успешно вошли в систему" });
-    navigate("/dashboard/progress");
   };
 
   const handleRegister = (e: React.FormEvent) => {

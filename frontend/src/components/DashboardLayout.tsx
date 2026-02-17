@@ -79,7 +79,15 @@ const DashboardLayout = () => {
           background: "linear-gradient(90deg, transparent, hsl(90 85% 45% / 0.3), hsl(270 75% 50% / 0.3), transparent)"
         }} />
         <button
-          onClick={() => {
+          onClick={async () => {
+            try {
+              await fetch('/api/logout', {
+                method: 'POST',
+                credentials: 'include',
+              });
+            } catch (error) {
+              console.error('Logout error:', error);
+            }
             localStorage.removeItem("isAuthenticated");
             localStorage.removeItem("userEmail");
             setMobileOpen(false);
