@@ -7,11 +7,12 @@ ssh user@stream.eeee.baby
 cd /home/username/web/stream.eeee.baby
 ```
 
-## 2. Клонируй
+## 2. Клонируй (весь код в одном репозитории)
 
 ```bash
 git clone git@github.com:cosmokit/streamer.git
 cd streamer
+# frontend уже внутри, всё готово!
 ```
 
 ## 3. БД в Hestia CP
