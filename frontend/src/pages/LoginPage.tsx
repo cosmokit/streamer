@@ -94,8 +94,20 @@ const LoginPage = () => {
     color: "hsl(var(--foreground))",
   };
 
+  // Убираем желтый фон автозаполнения
+  const autoFillStyles = `
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 30px hsl(var(--input)) inset !important;
+      -webkit-text-fill-color: hsl(var(--foreground)) !important;
+    }
+  `;
+
   return (
     <div className="min-h-screen gradient-bg flex items-center justify-center relative overflow-hidden px-4">
+      <style>{autoFillStyles}</style>
       {/* Background effects */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0" style={{

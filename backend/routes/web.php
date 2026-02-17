@@ -7,6 +7,10 @@ use App\Http\Controllers\Admin\HelpArticleController;
 use App\Http\Controllers\Admin\TemplateController as AdminTemplateController;
 use App\Http\Controllers\Admin\AdminAuthController;
 
+// User auth API routes (используем веб-роуты для сессий!)
+Route::post('/api/login', [\App\Http\Controllers\Api\AuthController::class, 'login'])->name('api.login');
+Route::post('/api/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout'])->middleware('auth')->name('api.logout');
+
 // Admin auth routes (отдельные от юзерских!)
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('login', [AdminAuthController::class, 'showLogin'])->name('login');
