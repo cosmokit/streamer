@@ -6,9 +6,9 @@ use App\Models\User;
 use App\Models\StreamRun;
 use App\Models\Notification;
 use App\Models\Video;
-use App\Models\Setting;
 use App\Models\Template;
 use App\Models\HelpArticle;
+use App\Models\Setting;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -17,8 +17,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(LearningStepSeeder::class);
-
-        // Create admin user
+        
         $admin = User::create([
             'name' => 'Admin',
             'email' => 'admin@streamer.local',
@@ -26,22 +25,22 @@ class DatabaseSeeder extends Seeder
             'is_admin' => true,
         ]);
 
-        // Create demo users
         $user1 = User::create([
             'name' => 'User 1',
             'email' => 'user1@streamer.local',
-            'password => Hash::make("user12345"),
-            "telegram" => "@user1_stream",
-            "twitch" => "user1_twitch",
+            'password' => Hash::make('user12345'),
+            'telegram' => '@user1_stream',
+            'twitch' => 'user1_twitch',
         ]);
 
         $user2 = User::create([
             'name' => 'User 2',
             'email' => 'user2@streamer.local',
             'password' => Hash::make('user12345'),
+            'telegram' => '@user2_stream',
+            'twitch' => 'user2_twitch',
         ]);
 
-        // Create stream runs for user1 (day 3)
         for ($i = 1; $i <= 3; $i++) {
             StreamRun::create([
                 'user_id' => $user1->id,
@@ -56,36 +55,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now()->subDays(4 - $i),
             ]);
         }
-
-        // Create videos (70 total)
-        $videoTitles = [
-            'DYNASTY WARRIORS ORIGINS',
-            'CLAIR OBSCUR EXPEDITION 33',
-            'KINGDOM COME DELIVERANCE 2',
-            'SILENT HILL F',
-            'DELTARUNE CHAPTER 4',
-            'MAFIA THE OLD COUNTRY',
-            'LITTLE NIGHTMARES 3',
-            'METAL GEAR SOLID DELTA SNAKE EATER',
-            'SNIPER ELITE RESISTANCE',
-            'ATOMFALL',
-            'DYING LIGHT THE BEAST',
-            'CIVILIZATION 7',
-            'DOOM THE DARK AGES',
-            'HOLLOW KNIGHT SILKSONG',
-            'AI LIMIT',
-            'LOST SOUL ASIDE',
-            'BLOODBORNE',
-            'ELDEN RING NIGHTREIGN',
-            'RESIDENT EVIL 5',
-            'BORDERLANDS 4',
-        ];
-
-        $durations = [
-            65856, 49541, 222867, 31879, 13108, 31026, 10093, 33735,
-            11361, 23625, 32149, 37762, 34038, 42274, 33186, 42151,
-            29128, 43811, 29310, 46961
-        ];
 
         $videoData = [
             ['title' => 'DYNASTY WARRIORS ORIGINS', 'url' => 'https://www.youtube.com/watch?v=GoJsl7HmWnc', 'duration' => '18:17:36'],
@@ -152,11 +121,6 @@ class DatabaseSeeder extends Seeder
             ['title' => 'Dead Space Remake', 'url' => 'https://www.youtube.com/watch?v=qUl3wVEh2oU', 'duration' => '7:56:54'],
             ['title' => 'Resident Evil 8 Village', 'url' => 'https://www.youtube.com/watch?v=4tnq1ERXc5M', 'duration' => '7:29:16'],
             ['title' => 'FOBIA St. Dinfna Hotel', 'url' => 'https://www.youtube.com/watch?v=_tMPyXXw0rM', 'duration' => '6:13:21'],
-            ['title' => 'Dying Light 2 : Part 2', 'url' => 'https://www.youtube.com/watch?v=lrH_3g-dEB8', 'duration' => '7:44:04'],
-            ['title' => 'Fatal Frame 4/Project Zero 4:Mask of the Lunar Eclipse', 'url' => 'https://www.youtube.com/watch?v=dhyXmBzUZhA', 'duration' => '10:18:56'],
-            ['title' => 'Alan Wake Remastered', 'url' => 'https://www.youtube.com/watch?v=Q2inULBRmKI', 'duration' => '9:09:55'],
-            ['title' => 'Resident Evil 5', 'url' => 'https://www.youtube.com/watch?v=0TiOSVTufhw', 'duration' => '7:19:03'],
-            ['title' => 'Resident Evil 5', 'url' => 'https://www.youtube.com/watch?v=GmDTT-wYqgE', 'duration' => '7:19:03'],
         ];
 
         $sevenDaysAgo = now()->subDays(7);
@@ -182,7 +146,6 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // Create templates
         $templates = [
             ['category' => 'Gaming', 'name' => 'Boy&Girls', 'description' => 'Stylish gaming setup for mixed streamers'],
             ['category' => 'Gaming', 'name' => 'Wizard', 'description' => 'Mystical wizard themed overlay'],
@@ -214,7 +177,6 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // Create help articles
         HelpArticle::create([
             'tag' => 'step',
             'title' => 'Шаг 1 - Ознакомление',
@@ -256,6 +218,10 @@ class DatabaseSeeder extends Seeder
             'body' => 'Свяжитесь с технической поддержкой для получения помощи.',
             'sort_order' => 6,
         ]);
-
+        
+        Setting::create([
+            'key' => 'nezhna_api_key',
+            'value' => '',
+        ]);
     }
 }
