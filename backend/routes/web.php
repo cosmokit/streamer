@@ -102,7 +102,11 @@ Route::prefix('api')->group(function () {
     });
 });
 
-// SPA fallback - отдаём React frontend для всех остальных маршрутов (кроме статических файлов)
-Route::get('/{any}', function () {
+// SPA fallback - только для dashboard маршрутов
+Route::get('/dashboard/{any?}', function () {
     return file_get_contents(public_path('app/index.html'));
-})->where('any', '^(?!api|admin|app).*$');
+})->where('any', '.*');
+
+Route::get('/', function () {
+    return file_get_contents(public_path('app/index.html'));
+});
