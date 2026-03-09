@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\StreamRun;
 use App\Models\Notification;
 use App\Models\Video;
+use AppModelsSetting;
 use App\Models\Template;
 use App\Models\HelpArticle;
 use Illuminate\Database\Seeder;
@@ -15,6 +16,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->call(LearningStepSeeder::class);
+
         // Create admin user
         $admin = User::create([
             'name' => 'Admin',
@@ -27,7 +30,9 @@ class DatabaseSeeder extends Seeder
         $user1 = User::create([
             'name' => 'User 1',
             'email' => 'user1@streamer.local',
-            'password' => Hash::make('user12345'),
+            'password => Hash::make("user12345"),
+            "telegram" => "@user1_stream",
+            "twitch" => "user1_twitch",
         ]);
 
         $user2 = User::create([
