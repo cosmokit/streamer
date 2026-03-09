@@ -30,6 +30,8 @@
                         <th>ID</th>
                         <th>Имя</th>
                         <th>Email</th>
+                        <th>Telegram</th>
+                        <th>Twitch</th>
                         <th>Видео</th>
                         <th>Прокси</th>
                         <th>Стримы</th>
@@ -48,6 +50,8 @@
                             @endif
                         </td>
                         <td>{{ $user->email }}</td>
+                        <td><span class="text-muted small">{{ $user->telegram ?? '—' }}</span></td>
+                        <td><span class="text-muted small">{{ $user->twitch ?? '—' }}</span></td>
                         <td><span class="badge bg-info">{{ $user->videos_count }}</span></td>
                         <td><span class="badge bg-secondary">{{ $user->proxies_count }}</span></td>
                         <td><span class="badge bg-primary">{{ $user->stream_runs_count }}</span></td>
@@ -84,7 +88,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-4">
+                        <td colspan="10" class="text-center text-muted py-4">
                             <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                             Пользователи не найдены
                         </td>

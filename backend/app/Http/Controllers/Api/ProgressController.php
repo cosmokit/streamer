@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\ProgressStep;
-use App\Models\StreamRun;
-use App\Models\Proxy;
+use App\Models\LearningStep;
+use App\Models\UserProgress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,60 +12,87 @@ class ProgressController extends Controller
 {
     public function index()
     {
-        $userId = 2; // Демо: user1
+        $user = Auth::user();
+        $steps = LearningStep::where('is_active', true)
+            ->orderBy('order')
+            ->get();
         
-        $runsCount = StreamRun::where('user_id', $userId)->count();
-        $activeProxiesCount = Proxy::where('user_id', $userId)
-            ->where('is_active', true)
-            ->count();
-        
-        $monetizationLocked = $runsCount < 4 || $activeProxiesCount === 0;
-        $reason = [];
-        
-        if ($runsCount < 4) {
-            $reason[] = "Нужно {$runsCount}/4 запуска стрима";
-        }
-        if ($activeProxiesCount === 0) {
-            $reason[] = 'Нет активных прокси';
-        }
-        
-        return response()->json([
-            'runs_count' => $runsCount,
-            'day_index' => min($runsCount, 4),
-            'active_proxies_count' => $activeProxiesCount,
-            'monetization_locked' => $monetizationLocked,
-            'reason' => implode(', ', $reason),
-        ]);
-    }
-
-    public function steps()
-    {
-        $steps = ProgressStep::where('user_id', 2)
-            ->orderBy('step_key')
+        $userProgress = UserProgress::where('user_id', $user->id)
             ->get()
-            ->keyBy('step_key');
+            ->keyBy('learning_step_id');
+        
+        $stepsWithProgress = $steps->map(function ($step) use ($userProgress) {
+            $progress = $userProgress->get($step->id);
+            
+            return [
+                'id' => $step->id,
+                'title' => $step->title,
+                'description' => $step->description,
+                'external_url' => $step->external_url,
+                'order' => $step->order,
+                'status' => $progress ? $progress->status : 'new',
+                'started_at' => $progress ? $progress->started_at : null,
+                'completed_at' => $progress ? $progress->completed_at : null,
+            ];
+        });
+        
+        $completedCount = $stepsWithProgress->where('status', 'completed')->count();
+        $totalCount = $stepsWithProgress->count();
+        $progressPercentage = $totalCount > 0 ? round(($completedCount / $totalCount) * 100) : 0;
         
         return response()->json([
-            'data' => $steps,
+            'data' => $stepsWithProgress,
+            'summary' => [
+                'total' => $totalCount,
+                'completed' => $completedCount,
+                'progress_percentage' => $progressPercentage,
+            ]
         ]);
     }
 
-    public function completeStep(string $stepKey)
+    public function start(Request $request, LearningStep $step)
     {
-        $step = ProgressStep::updateOrCreate(
+        $user = Auth::user();
+        
+        $progress = UserProgress::firstOrCreate(
             [
-                'user_id' => 2,
-                'step_key' => $stepKey,
+                'user_id' => $user->id,
+                'learning_step_id' => $step->id,
             ],
             [
-                'is_completed' => true,
-                'completed_at' => now(),
+                'status' => 'in_progress',
+                'started_at' => now(),
             ]
         );
-
+        
+        if ($progress->wasRecentlyCreated || $progress->status === 'new') {
+            $progress->update([
+                'status' => 'in_progress',
+                'started_at' => now(),
+            ]);
+        }
+        
         return response()->json([
-            'message' => 'Шаг отмечен как выполненный',
-            'data' => $step,
+            'message' => 'Обучение начато',
+            'data' => $progress
+        ]);
+    }
+
+    public function complete(Request $request, LearningStep $step)
+    {
+        $user = Auth::user();
+        
+        $progress = UserProgress::where('user_id', $user->id)
+            ->where('learning_step_id', $step->id)
+            ->firstOrFail();
+        
+        $progress->update([
+            'status' => 'awaiting_confirmation',
+        ]);
+        
+        return response()->json([
+            'message' => 'Отправлено на подтверждение',
+            'data' => $progress
         ]);
     }
 }

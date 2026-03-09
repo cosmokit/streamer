@@ -10,11 +10,10 @@ return new class extends Migration
     {
         Schema::create('videos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
-            $table->string('url');
-            $table->integer('duration_seconds');
-            $table->timestamp('added_at');
+            $table->text('url');
+            $table->string('duration');
+            $table->integer('duration_minutes')->default(0);
             $table->timestamps();
         });
     }

@@ -96,15 +96,28 @@
                 <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                     <i class="bi bi-speedometer2"></i> Дашборд
                 </a>
-                <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                    <i class="bi bi-people"></i> Пользователи
-                </a>
-                <a href="{{ route('admin.templates.index') }}" class="nav-link {{ request()->routeIs('admin.templates.*') ? 'active' : '' }}">
-                    <i class="bi bi-file-earmark-image"></i> Шаблоны
-                </a>
-                <a href="{{ route('admin.help.index') }}" class="nav-link {{ request()->routeIs('admin.help.*') ? 'active' : '' }}">
-                    <i class="bi bi-question-circle"></i> Статьи помощи
-                </a>
+            <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                <i class="bi bi-people"></i> Пользователи
+            </a>
+            <a href="{{ route('admin.videos.index') }}" class="nav-link {{ request()->routeIs('admin.videos.*') ? 'active' : '' }}">
+                <i class="bi bi-camera-video"></i> Видеозаписи
+            </a>
+            <a href="{{ route('admin.proxies.index') }}" class="nav-link {{ request()->routeIs('admin.proxies.*') ? 'active' : '' }}">
+                <i class="bi bi-hdd-network"></i> Прокси
+            </a>
+            <a href="{{ route('admin.templates.index') }}" class="nav-link {{ request()->routeIs('admin.templates.*') ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-image"></i> Шаблоны
+            </a>
+            <a href="{{ route('admin.help.index') }}" class="nav-link {{ request()->routeIs('admin.help.*') ? 'active' : '' }}">
+                <i class="bi bi-question-circle"></i> Статьи помощи
+            </a>
+            <a href="{{ route('admin.learning-steps.index') }}" class="nav-link {{ request()->routeIs('admin.learning-steps.*') ? 'active' : '' }}">
+                <i class="bi bi-ladder"></i> Шаги Обучения
+            </a>
+            <a href="{{ route('admin.settings.index') }}" class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                <i class="bi bi-gear"></i> Настройки
+            </a>
+            </a>
                 
                 <hr class="my-3 mx-3 border-secondary">
                 

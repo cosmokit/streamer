@@ -1,38 +1,55 @@
-import { Video, Clock, Calendar, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Video, Clock } from "lucide-react";
 
-const videos = [
-  { title: "DYNASTY WARRIORS ORIGINS", url: "https://youtube.com/watch?v=example1", duration: "18:17:36", date: "10/24/2025" },
-  { title: "CLAIR OBSCUR EXPEDITION 33", url: "https://youtube.com/watch?v=example2", duration: "13:45:41", date: "10/24/2025" },
-  { title: "KINGDOM COME DELIVERANCE 2", url: "https://youtube.com/watch?v=example3", duration: "1:02:14:27", date: "10/24/2025" },
-  { title: "SILENT HILL F", url: "https://youtube.com/watch?v=example4", duration: "08:51:19", date: "10/24/2025" },
-  { title: "DELTARUNE CHAPTER 4", url: "https://youtube.com/watch?v=example5", duration: "3:38:28", date: "10/24/2025" },
-  { title: "MAFIA THE OLD COUNTRY", url: "https://youtube.com/watch?v=example6", duration: "8:37:06", date: "10/24/2025" },
-  { title: "LITTLE NIGHTMARES 3", url: "https://youtube.com/watch?v=example7", duration: "2:48:13", date: "10/24/2025" },
-  { title: "METAL GEAR SOLID DELTA SNAKE EATER", url: "https://youtube.com/watch?v=example8", duration: "9:22:15", date: "10/24/2025" },
-  { title: "SNIPER ELITE RESISTANCE", url: "https://youtube.com/watch?v=example9", duration: "3:09:21", date: "10/24/2025" },
-  { title: "ATOMFALL", url: "https://youtube.com/watch?v=example10", duration: "6:33:45", date: "10/24/2025" },
-  { title: "DYING LIGHT THE BEAST", url: "https://youtube.com/watch?v=example11", duration: "8:55:49", date: "10/24/2025" },
-  { title: "CIVILIZATION 7", url: "https://youtube.com/watch?v=example12", duration: "10:29:22", date: "10/24/2025" },
-  { title: "DOOM THE DARK AGES", url: "https://youtube.com/watch?v=example13", duration: "9:27:18", date: "10/24/2025" },
-  { title: "HOLLOW KNIGHT SILKSONG", url: "https://youtube.com/watch?v=example14", duration: "11:44:34", date: "10/24/2025" },
-  { title: "AI LIMIT", url: "https://youtube.com/watch?v=example15", duration: "9:13:06", date: "10/24/2025" },
-  { title: "LOST SOUL ASIDE", url: "https://youtube.com/watch?v=example16", duration: "11:42:31", date: "10/24/2025" },
-  { title: "BLOODBORNE", url: "https://youtube.com/watch?v=example17", duration: "8:05:28", date: "10/24/2025" },
-  { title: "ELDEN RING NIGHTREIGN", url: "https://youtube.com/watch?v=example18", duration: "12:13:31", date: "10/24/2025" },
-  { title: "RESIDENT EVIL 5", url: "https://youtube.com/watch?v=example19", duration: "8:08:30", date: "10/24/2025" },
-  { title: "BORDERLANDS 4", url: "https://youtube.com/watch?v=example20", duration: "13:02:41", date: "10/24/2025" },
-];
-
-const totalDuration = 37870;
-
-const stats = [
-  { icon: Video, color: "hsl(270 75% 55%)", label: "Всего Видео", value: "70" },
-  { icon: Clock, color: "hsl(90 85% 50%)", label: "Длительность (мин)", value: totalDuration.toLocaleString() },
-  { icon: Calendar, color: "hsl(195 100% 55%)", label: "На Этой Неделе", value: "0" },
-  { icon: TrendingUp, color: "hsl(90 85% 50%)", label: "Среднее/день", value: "2.3" },
-];
+interface VideoData {
+  id: number;
+  title: string;
+  url: string;
+  duration: string;
+  created_at: string;
+}
 
 const RecordsPage = () => {
+  const [videos, setVideos] = useState<VideoData[]>([]);
+  const [totalVideos, setTotalVideos] = useState(0);
+  const [totalDuration, setTotalDuration] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/videos', {
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json',
+      }
+    })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data.data) {
+          setVideos(data.data);
+          setTotalVideos(data.summary?.total_videos || 0);
+          setTotalDuration(data.summary?.total_duration_minutes || 0);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error loading videos:', err);
+        setLoading(false);
+      });
+  }, []);
+
+  const stats = [
+    { icon: Video, color: "hsl(270 75% 55%)", label: "Всего Видео", value: totalVideos.toString() },
+    { icon: Clock, color: "hsl(90 85% 50%)", label: "Длительность (мин)", value: totalDuration.toLocaleString() },
+  ];
+
+  if (loading) {
+    return <div className="p-4 md:p-8 max-w-5xl">Загрузка...</div>;
+  }
   return (
     <div className="p-4 md:p-8 max-w-5xl">
       <div className="flex items-center gap-3 mb-6">
@@ -43,7 +60,7 @@ const RecordsPage = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 mb-6 md:mb-8">
+      <div className="grid grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
         {stats.map((stat, i) => (
           <div key={i} className="glass-card glass-card-hover rounded-xl p-4 flex items-center gap-3 transition-all">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{
@@ -82,7 +99,9 @@ const RecordsPage = () => {
                   <a href={v.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-xs md:text-sm" style={{ color: "hsl(90 85% 55%)" }}>YouTube ↗</a>
                 </td>
                 <td className="px-3 md:px-4 py-2.5 text-xs md:text-sm" style={{ color: "hsl(260 15% 50%)" }}>{v.duration}</td>
-                <td className="px-3 md:px-4 py-2.5 text-xs md:text-sm hidden sm:table-cell" style={{ color: "hsl(260 15% 50%)" }}>{v.date}</td>
+                <td className="px-3 md:px-4 py-2.5 text-xs md:text-sm hidden sm:table-cell" style={{ color: "hsl(260 15% 50%)" }}>
+                  {new Date(v.created_at).toLocaleDateString('ru-RU')}
+                </td>
               </tr>
             ))}
           </tbody>

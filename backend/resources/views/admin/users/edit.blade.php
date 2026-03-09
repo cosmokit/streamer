@@ -32,6 +32,24 @@
             </div>
 
             <div class="mb-3">
+                <label class="form-label">Telegram</label>
+                <input type="text" name="telegram" class="form-control @error('telegram') is-invalid @enderror" 
+                       value="{{ old('telegram', $user->telegram) }}" placeholder="@username или ссылка">
+                @error('telegram')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Twitch</label>
+                <input type="text" name="twitch" class="form-control @error('twitch') is-invalid @enderror" 
+                       value="{{ old('twitch', $user->twitch) }}" placeholder="username или ссылка">
+                @error('twitch')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="mb-3">
                 <label class="form-label">Новый пароль (оставьте пустым, чтобы не менять)</label>
                 <input type="password" name="password" class="form-control @error('password') is-invalid @enderror">
                 @error('password')
@@ -68,6 +86,54 @@
                     <i class="bi bi-x-lg"></i> Отмена
                 </a>
             </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <h5 class="card-title mb-3">
+            <i class="bi bi-graph-up me-2"></i>Прогресс Обучения
+        </h5>
+        <div class="mb-3">
+            <a href="{{ route('admin.users.progress', $user) }}" class="btn btn-info">
+                <i class="bi bi-list-check"></i> Просмотр прогресса
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <h5 class="card-title mb-3">
+            <i class="bi bi-hdd-network me-2"></i>Управление прокси
+        </h5>
+        
+        <div class="mb-4">
+            <a href="{{ route('admin.users.proxies', $user) }}" class="btn btn-primary">
+                <i class="bi bi-list-ul"></i> Просмотр прокси пользователя ({{ $user->proxies()->count() }})
+            </a>
+        </div>
+        
+        <hr>
+        
+        <h6 class="mb-2">Генератор прокси</h6>
+        <p class="text-muted small mb-3">
+            Сгенерировать и скачать список из 11 реалистичных прокси
+        </p>
+        <form method="POST" action="{{ route('admin.users.generate-proxies', $user) }}" class="d-flex gap-2 align-items-end">
+            @csrf
+            <div>
+                <label class="form-label small">Формат файла</label>
+                <select name="format" class="form-select form-select-sm">
+                    <option value="txt">TXT (IP:PORT:USER:PASS)</option>
+                    <option value="csv">CSV (таблица)</option>
+                    <option value="json">JSON (объекты)</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-download"></i> Создать и скачать
+            </button>
         </form>
     </div>
 </div>

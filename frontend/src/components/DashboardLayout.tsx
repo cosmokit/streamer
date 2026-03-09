@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { BarChart3, Radio, Shield, Layout, Video, HelpCircle, Menu, X, User, LogOut } from "lucide-react";
 import logo from "@/assets/logo.png";
@@ -15,6 +15,25 @@ const navItems = [
 const DashboardLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch('/api/me', {
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
+    })
+      .then(res => {
+        if (!res.ok) {
+          localStorage.removeItem("isAuthenticated");
+          localStorage.removeItem("userEmail");
+          navigate("/login");
+        }
+      })
+      .catch(() => {
+        localStorage.removeItem("isAuthenticated");
+        localStorage.removeItem("userEmail");
+        navigate("/login");
+      });
+  }, [navigate]);
 
   const sidebarContent = (
     <div className="flex flex-col h-full">

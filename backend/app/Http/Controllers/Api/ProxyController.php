@@ -11,65 +11,95 @@ class ProxyController extends Controller
 {
     public function index()
     {
-        // Демо: всегда user_id=2 (user1)
-        $userId = 2;
-        $proxies = Proxy::where('user_id', $userId)->orderBy('created_at', 'desc')->get();
-        
+        $proxies = Auth::user()->proxies()
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return response()->json([
             'data' => $proxies,
-            'active_count' => $proxies->where('is_active', true)->count(),
+            'summary' => [
+                'total' => $proxies->count(),
+                'pending' => $proxies->where('status', 'pending')->count(),
+                'active' => $proxies->where('status', 'active')->count(),
+                'online' => $proxies->where('status', 'online')->count(),
+                'offline' => $proxies->where('status', 'offline')->count(),
+            ]
         ]);
     }
 
     public function upload(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:txt|max:10240',
+            'file' => 'required|file|mimes:txt,json,csv|max:2048',
         ]);
 
         $file = $request->file('file');
         $content = file_get_contents($file->getRealPath());
-        $lines = explode("\n", $content);
-        
-        $created = 0;
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if (empty($line)) {
+        $extension = $file->getClientOriginalExtension();
+
+        $format = match($extension) {
+            'json' => 'json',
+            'csv' => 'csv',
+            default => 'txt',
+        };
+
+        $parsedProxies = Proxy::parseFromFile($content, $format);
+
+        if (empty($parsedProxies)) {
+            return response()->json([
+                'message' => 'Не удалось распарсить файл или он пустой'
+            ], 422);
+        }
+
+        $user = Auth::user();
+        $addedCount = 0;
+        $skippedCount = 0;
+
+        foreach ($parsedProxies as $proxyData) {
+            $exists = $user->proxies()->where('host', $proxyData['host'])->exists();
+            
+            if ($exists) {
+                $skippedCount++;
                 continue;
             }
-            
-            $parsed = Proxy::parseProxyLine($line);
-            
-            Proxy::create([
-                'user_id' => 2, // Демо: user1
-                'line_raw' => $line,
-                'protocol' => $parsed['protocol'] ?? null,
-                'host' => $parsed['host'] ?? null,
-                'port' => $parsed['port'] ?? null,
-                'username' => $parsed['username'] ?? null,
-                'password' => $parsed['password'] ?? null,
-                'is_active' => false,
+
+            $user->proxies()->create([
+                'host' => $proxyData['host'],
+                'port' => $proxyData['port'],
+                'username' => $proxyData['username'] ?? null,
+                'password' => $proxyData['password'] ?? null,
+                'status' => 'pending',
             ]);
-            
-            $created++;
+
+            $addedCount++;
         }
-        
+
         return response()->json([
-            'message' => "Загружено {$created} прокси",
-            'created' => $created,
+            'message' => "Добавлено: {$addedCount}, пропущено дубликатов: {$skippedCount}",
+            'added' => $addedCount,
+            'skipped' => $skippedCount,
         ]);
     }
 
     public function activate()
     {
-        $updated = Proxy::where('user_id', 2)
-            ->whereNotNull('host')
-            ->whereNotNull('port')
-            ->update(['is_active' => true]);
+        $user = Auth::user();
         
+        $pendingCount = $user->proxies()->where('status', 'pending')->count();
+        
+        if ($pendingCount === 0) {
+            return response()->json([
+                'message' => 'Нет прокси для активации'
+            ], 400);
+        }
+
+        $user->proxies()->where('status', 'pending')->update([
+            'status' => 'active'
+        ]);
+
         return response()->json([
-            'message' => "Активировано {$updated} прокси",
-            'activated' => $updated,
+            'message' => "Активировано прокси: {$pendingCount}",
+            'activated' => $pendingCount,
         ]);
     }
 }
