@@ -6,7 +6,7 @@ use App\Models\User;
 use App\Models\StreamRun;
 use App\Models\Notification;
 use App\Models\Video;
-use AppModelsSetting;
+use App\Models\Setting;
 use App\Models\Template;
 use App\Models\HelpArticle;
 use Illuminate\Database\Seeder;
