@@ -3,11 +3,35 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    public function register(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+        ]);
+
+        $user = User::create([
+            'name' => explode('@', $request->email)[0],
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return response()->json([
+            'user' => $user,
+            'message' => 'Регистрация успешна'
+        ]);
+    }
+
     public function login(Request $request)
     {
         $request->validate([
@@ -18,7 +42,6 @@ class AuthController extends Controller
         if (Auth::attempt($request->only("email", "password"))) {
             $user = Auth::user();
             
-            // Проверка что это не админ
             if ($user->is_admin) {
                 Auth::logout();
                 return response()->json([
@@ -26,7 +49,6 @@ class AuthController extends Controller
                 ], 403);
             }
 
-            // Проверка бана
             if ($user->is_banned) {
                 Auth::logout();
                 return response()->json([

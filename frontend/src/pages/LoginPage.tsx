@@ -57,7 +57,7 @@ const LoginPage = () => {
     }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password || !confirmPassword) {
       toast({ title: "Ошибка", description: "Заполните все поля", variant: "destructive" });
@@ -71,11 +71,39 @@ const LoginPage = () => {
       toast({ title: "Ошибка", description: "Пароль должен содержать минимум 6 символов", variant: "destructive" });
       return;
     }
-    // Save auth to localStorage
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userEmail", email);
-    toast({ title: "Регистрация успешна!", description: "Аккаунт создан. Добро пожаловать!" });
-    navigate("/dashboard/progress");
+
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userEmail", email);
+        toast({ title: "Регистрация успешна!", description: data.message || "Аккаунт создан. Добро пожаловать!" });
+        navigate("/dashboard/progress");
+      } else {
+        toast({ 
+          title: "Ошибка регистрации", 
+          description: data.message || "Не удалось создать аккаунт", 
+          variant: "destructive" 
+        });
+      }
+    } catch (error) {
+      toast({ 
+        title: "Ошибка", 
+        description: "Не удалось подключиться к серверу", 
+        variant: "destructive" 
+      });
+    }
   };
 
   const handleForgot = (e: React.FormEvent) => {
