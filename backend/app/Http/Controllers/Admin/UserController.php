@@ -88,7 +88,7 @@ class UserController extends Controller
     public function confirmProgress(Request $request, User $user, $progressId)
     {
         $progress = $user->learningProgress()->findOrFail($progressId);
-        $progress->update(['status' => 'completed']);
+        $progress->update(['status' => 'completed', 'completed_at' => now()]);
         
         return back()->with('success', 'Прогресс подтвержден');
     }
