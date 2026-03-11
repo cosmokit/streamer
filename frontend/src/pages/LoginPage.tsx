@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
@@ -8,7 +8,19 @@ type Mode = "login" | "register" | "forgot";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>("login");
+  const location = useLocation();
+  
+  const getInitialMode = (): Mode => {
+    if (location.pathname === '/register') return 'register';
+    if (location.pathname === '/forgot-password') return 'forgot';
+    return 'login';
+  };
+  
+  const [mode, setMode] = useState<Mode>(getInitialMode());
+  
+  useEffect(() => {
+    setMode(getInitialMode());
+  }, [location.pathname]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [email, setEmail] = useState("");

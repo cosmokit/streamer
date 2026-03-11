@@ -36,6 +36,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard/progress" replace />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<LoginPage />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <DashboardLayout />

@@ -24,6 +24,7 @@ class UserController extends Controller
 
         $users = $query->orderBy('created_at', 'desc')->paginate(20);
         return view('admin.users.index', compact('users'));
+    }
 
     public function create()
     {
@@ -51,7 +52,6 @@ class UserController extends Controller
         ]);
 
         return redirect()->route('admin.users.index')->with('success', 'Пользователь создан');
-    }
     }
 
     public function edit(User $user)
@@ -85,227 +85,130 @@ class UserController extends Controller
         return view('admin.users.progress', compact('user', 'learningProgress'));
     }
 
-    public function confirmProgress(User $user, $stepId)
+    public function confirmProgress(Request $request, User $user, $progressId)
     {
-        $progress = $user->learningProgress()->where('learning_step_id', $stepId)->first();
+        $progress = $user->learningProgress()->findOrFail($progressId);
+        $progress->update(['status' => 'completed']);
         
-        if (!$progress) {
-            return back()->with('error', 'Прогресс не найден');
-        }
-        
-        if ($progress->status !== 'awaiting_confirmation') {
-            return back()->with('error', 'Этот шаг не требует подтверждения');
-        }
-        
-        $progress->update([
-            'status' => 'completed',
-            'completed_at' => now(),
-        ]);
-        
-        return back()->with('success', 'Шаг подтверждён');
+        return back()->with('success', 'Прогресс подтвержден');
     }
 
-    public function generateProxies(Request $request, User $user)
+    public function toggleBan(User $user)
     {
-        $format = $request->input('format', 'txt');
-        $proxies = $this->generateRealisticProxies(11);
-        
-        $content = '';
-        $filename = '';
-        
-        if ($format === 'json') {
-            $content = json_encode($proxies, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-            $filename = "proxies_user_{$user->id}_" . date('Y-m-d_His') . ".json";
-            $contentType = 'application/json';
-        } elseif ($format === 'csv') {
-            $content = "ip,port,username,password\n";
-            foreach ($proxies as $proxy) {
-                $content .= "{$proxy['ip']},{$proxy['port']},{$proxy['username']},{$proxy['password']}\n";
-            }
-            $filename = "proxies_user_{$user->id}_" . date('Y-m-d_His') . ".csv";
-            $contentType = 'text/csv';
-        } else {
-            foreach ($proxies as $proxy) {
-                $content .= "{$proxy['ip']}:{$proxy['port']}:{$proxy['username']}:{$proxy['password']}\n";
-            }
-            $filename = "proxies_user_{$user->id}_" . date('Y-m-d_His') . ".txt";
-            $contentType = 'text/plain';
-        }
-        
-        return response($content)
-            ->header('Content-Type', $contentType)
-            ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
+        $user->update([
+            'is_banned' => !$user->is_banned,
+        ]);
+
+        return back()->with('success', $user->is_banned ? 'Пользователь заблокирован' : 'Пользователь разблокирован');
+    }
+
+    public function destroy(User $user)
+    {
+        $user->delete();
+        return redirect()->route('admin.users.index')->with('success', 'Пользователь удалён');
     }
 
     public function proxies(User $user)
     {
-        $proxies = $user->proxies()->orderBy('created_at', 'desc')->paginate(50);
+        $proxies = $user->proxies()->orderBy('created_at', 'desc')->paginate(20);
         return view('admin.users.proxies', compact('user', 'proxies'));
     }
 
     public function activateAllProxies(User $user)
     {
-        $count = $user->proxies()->whereIn('status', ['pending', 'offline'])->count();
+        $pendingCount = $user->proxies()->where('status', 'pending')->count();
         
-        if ($count === 0) {
+        if ($pendingCount === 0) {
             return back()->with('warning', 'Нет прокси для активации');
         }
         
-        $user->proxies()->whereIn('status', ['pending', 'offline'])->update(['status' => 'active']);
+        $user->proxies()->where('status', 'pending')->update(['status' => 'active']);
         
-        return back()->with('success', "Активировано прокси: {$count}");
+        return back()->with('success', "Активировано прокси: {$pendingCount}");
     }
 
     public function deactivateAllProxies(User $user)
     {
-        $count = $user->proxies()->whereIn('status', ['active', 'online'])->count();
+        $activeCount = $user->proxies()->where('status', 'active')->count();
         
-        if ($count === 0) {
-            return back()->with('warning', 'Нет активных прокси для деактивации');
+        if ($activeCount === 0) {
+            return back()->with('warning', 'Нет активных прокси');
         }
         
-        $user->proxies()->whereIn('status', ['active', 'online'])->update(['status' => 'offline']);
+        $user->proxies()->where('status', 'active')->update(['status' => 'inactive']);
         
-        return back()->with('success', "Деактивировано прокси: {$count}");
+        return back()->with('success', "Деактивировано прокси: {$activeCount}");
     }
 
     public function deleteAllProxies(User $user)
     {
         $count = $user->proxies()->count();
+        
+        if ($count === 0) {
+            return back()->with('warning', 'Нет прокси для удаления');
+        }
+        
         $user->proxies()->delete();
         
         return back()->with('success', "Удалено прокси: {$count}");
     }
 
-    private function generateRealisticProxies(int $count): array
+    public function generateProxies(Request $request, User $user)
     {
+        $request->validate([
+            'format' => 'required|in:txt,json,csv',
+            'count' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $format = $request->format;
+        $count = $request->count ?? 11;
+        $proxies = $this->generateRealisticProxies($count);
+
+        $timestamp = date('Ymd_His');
+        $filename = "proxies_user_{$user->id}_{$timestamp}.{$format}";
+        
+        $content = '';
+        $contentType = 'text/plain';
+
+        if ($format === 'txt') {
+            $content = implode("\n", array_map(fn($p) => "{$p['host']}:{$p['port']}:{$p['username']}:{$p['password']}", $proxies));
+            $contentType = 'text/plain';
+        } elseif ($format === 'json') {
+            $content = json_encode($proxies, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            $contentType = 'application/json';
+        } elseif ($format === 'csv') {
+            $content = "host,port,username,password\n";
+            $content .= implode("\n", array_map(fn($p) => "{$p['host']},{$p['port']},{$p['username']},{$p['password']}", $proxies));
+            $contentType = 'text/csv';
+        }
+
+        return response($content)
+            ->header('Content-Type', $contentType)
+            ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
+    }
+
+    private function generateRealisticProxies($count = 11)
+    {
+        $ips = [
+            '45.138.74.100', '91.203.15.224', '185.223.95.162', '178.62.85.45',
+            '195.85.59.191', '45.9.74.71', '109.248.6.115', '188.40.181.236',
+            '91.239.207.126', '195.244.43.134', '62.122.184.54'
+        ];
+        
+        $ports = [8080, 3128, 8888, 1080, 8000];
+        $users = ['proxynet', 'streamhub', 'vipzone', 'eliteproxy', 'netstream'];
+        $passes = ['secure_pass_123', 'elite_key_456', 'premium_789', 'vip_access_101', 'stream_key_202'];
+
         $proxies = [];
-        $usedIps = [];
-        
-        $ipRanges = [
-            ['45.138.74', 1, 255], ['91.203.15', 1, 255], ['185.223.95', 1, 255],
-            ['203.142.75', 1, 255], ['212.83.164', 1, 255], ['94.130.244', 1, 255],
-            ['178.128.117', 1, 255], ['167.71.200', 1, 255], ['139.59.176', 1, 255],
-            ['159.89.195', 1, 255], ['104.248.143', 1, 255], ['188.166.234', 1, 255],
-            ['165.227.84', 1, 255], ['46.101.203', 1, 255], ['157.245.109', 1, 255],
-            ['134.209.156', 1, 255], ['161.35.219', 1, 255], ['68.183.205', 1, 255],
-        ];
-        
-        $ports = [8080, 3128, 1080, 8888, 9090, 8000, 3129, 8081, 9091, 1081, 10000];
-        
-        $firstParts = [
-            'proxy', 'user', 'stream', 'elite', 'premium', 'vip', 'fast', 'secure',
-            'private', 'dedicated', 'residential', 'mobile', 'datacenter', 'business',
-            'pro', 'super', 'mega', 'ultra', 'hyper', 'quantum', 'turbo', 'speed',
-            'dash', 'flex', 'nova', 'apex', 'prime', 'omega', 'alpha', 'beta',
-        ];
-        
-        $midParts = [
-            'px', 'net', 'link', 'hub', 'zone', 'node', 'core', 'edge', 'mesh',
-            'grid', 'cloud', 'wave', 'flow', 'sync', 'bolt', 'spark', 'lite',
-        ];
-        
-        $suffixes = ['', 'x', 'pro', 'plus', 'max', 'ultra', 'v2', 'new'];
-        
-        for ($i = 0; $i < $count; $i++) {
-            do {
-                $range = $ipRanges[array_rand($ipRanges)];
-                $lastOctet = rand($range[1], $range[2]);
-                $ip = $range[0] . '.' . $lastOctet;
-            } while (in_array($ip, $usedIps));
-            
-            $usedIps[] = $ip;
-            $port = $ports[array_rand($ports)];
-            
-            $usernameStyle = rand(1, 6);
-            
-            switch ($usernameStyle) {
-                case 1:
-                    $username = $firstParts[array_rand($firstParts)] . rand(100, 9999);
-                    break;
-                case 2:
-                    $username = $firstParts[array_rand($firstParts)] . '_' . $midParts[array_rand($midParts)] . rand(10, 999);
-                    break;
-                case 3:
-                    $username = $midParts[array_rand($midParts)] . rand(1000, 9999) . $suffixes[array_rand($suffixes)];
-                    break;
-                case 4:
-                    $username = $firstParts[array_rand($firstParts)] . rand(10, 99) . $midParts[array_rand($midParts)];
-                    break;
-                case 5:
-                    $username = strtolower($firstParts[array_rand($firstParts)]) . strtoupper($midParts[array_rand($midParts)]) . rand(100, 999);
-                    break;
-                default:
-                    $username = $firstParts[array_rand($firstParts)] . $firstParts[array_rand($firstParts)] . rand(10, 99);
-                    break;
-            }
-            
-            $password = $this->generateRealisticPassword();
-            
+        for ($i = 0; $i < min($count, count($ips)); $i++) {
             $proxies[] = [
-                'ip' => $ip,
-                'port' => $port,
-                'username' => $username,
-                'password' => $password,
+                'host' => $ips[$i],
+                'port' => $ports[$i % count($ports)],
+                'username' => $users[$i % count($users)],
+                'password' => $passes[$i % count($passes)],
             ];
         }
-        
+
         return $proxies;
     }
-
-    private function generateRealisticPassword(): string
-    {
-        $patterns = [
-            function() {
-                $chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
-                $pass = '';
-                for ($j = 0; $j < 8; $j++) {
-                    $pass .= $chars[rand(0, strlen($chars) - 1)];
-                }
-                $sym = ['!', '@', '#', '$', '%', '&', '*'][array_rand(['!', '@', '#', '$', '%', '&', '*'])];
-                return $pass . $sym . rand(10, 99);
-            },
-            function() {
-                $word = ['Stream', 'Proxy', 'Elite', 'Premium', 'Fast', 'Secure', 'Data', 'Access', 'Ultra', 'Mega'][array_rand(['Stream', 'Proxy', 'Elite', 'Premium', 'Fast', 'Secure', 'Data', 'Access', 'Ultra', 'Mega'])];
-                return $word . rand(2020, 2026) . ['!', '@', '#', '$'][array_rand(['!', '@', '#', '$'])] . chr(rand(65, 90)) . chr(rand(97, 122));
-            },
-            function() {
-                $word1 = ['Ultra', 'Super', 'Mega', 'Hyper', 'Fast', 'Quick'][array_rand(['Ultra', 'Super', 'Mega', 'Hyper', 'Fast', 'Quick'])];
-                $word2 = ['Pass', 'Proxy', 'Access', 'Secure'][array_rand(['Pass', 'Proxy', 'Access', 'Secure'])];
-                $nums = rand(1000, 9999);
-                $sym = ['!', '@', '#', '$'][array_rand(['!', '@', '#', '$'])];
-                return $word1 . $nums . $sym . $word2;
-            },
-            function() {
-                $prefix = ['Px', 'Pr', 'Acc', 'Str', 'Dt', 'Us', 'Vp', 'El', 'Pm'][array_rand(['Px', 'Pr', 'Acc', 'Str', 'Dt', 'Us', 'Vp', 'El', 'Pm'])];
-                $mid = rand(100, 999);
-                $suffix = ['#pX', '@sT', '!aK', '$mN', '%rQ', '&vB', '*hL'][array_rand(['#pX', '@sT', '!aK', '$mN', '%rQ', '&vB', '*hL'])];
-                $end = rand(10, 99);
-                return $prefix . $mid . $suffix . $end;
-            },
-            function() {
-                $upper = chr(rand(65, 90));
-                $lower = chr(rand(97, 122));
-                $num = rand(0, 9);
-                $sym = ['!', '@', '#', '$', '%', '&', '*'][array_rand(['!', '@', '#', '$', '%', '&', '*'])];
-                $word = ['Secure', 'Access', 'Proxy', 'Pass', 'Stream', 'Data', 'Elite', 'Vip'][array_rand(['Secure', 'Access', 'Proxy', 'Pass', 'Stream', 'Data', 'Elite', 'Vip'])];
-                return $upper . $lower . $num . $sym . $word . rand(100, 999);
-            },
-            function() {
-                $chars1 = 'ABCDEFGHJKMNPQRSTUVWXYZ';
-                $chars2 = 'abcdefghjkmnpqrstuvwxyz';
-                $pass = '';
-                for ($j = 0; $j < 3; $j++) {
-                    $pass .= $chars1[rand(0, strlen($chars1) - 1)];
-                    $pass .= $chars2[rand(0, strlen($chars2) - 1)];
-                    $pass .= rand(0, 9);
-                }
-                $sym = ['!', '@', '#', '$', '%'][array_rand(['!', '@', '#', '$', '%'])];
-                return $pass . $sym;
-            },
-        ];
-        
-        return $patterns[array_rand($patterns)]();
-    }
-
 }
