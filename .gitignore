@@ -39,3 +39,10 @@ test-auth.html
 
 # Docker volumes
 data/
+
+# Test files
+screenshots/
+test-*.sh
+test-*.js
+package.json
+package-lock.json
