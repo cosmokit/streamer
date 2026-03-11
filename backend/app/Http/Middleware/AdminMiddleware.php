@@ -11,7 +11,7 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Необходима авторизация');
+            return redirect()->route('admin.login')->with('error', 'Необходима авторизация');
         }
 
         if (!Auth::user()->is_admin) {
