@@ -103,6 +103,19 @@ Route::prefix('api')->group(function () {
 });
 
 // SPA fallback - только для dashboard маршрутов
+
+// SPA routes - добавляем все маршруты фронтенда
+Route::get('/login', function () {
+    return file_get_contents(public_path('app/index.html'));
+});
+
+Route::get('/register', function () {
+    return file_get_contents(public_path('app/index.html'));
+});
+
+Route::get('/forgot-password', function () {
+    return file_get_contents(public_path('app/index.html'));
+});
 Route::get('/dashboard/{any?}', function () {
     return file_get_contents(public_path('app/index.html'));
 })->where('any', '.*');
