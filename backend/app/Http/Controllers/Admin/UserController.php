@@ -24,6 +24,34 @@ class UserController extends Controller
 
         $users = $query->orderBy('created_at', 'desc')->paginate(20);
         return view('admin.users.index', compact('users'));
+
+    public function create()
+    {
+        return view('admin.users.create');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6|confirmed',
+            'telegram' => 'nullable|string|max:255',
+            'twitch' => 'nullable|string|max:255',
+            'is_admin' => 'boolean',
+        ]);
+
+        User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => \Hash::make($request->password),
+            'telegram' => $request->telegram,
+            'twitch' => $request->twitch,
+            'is_admin' => $request->boolean('is_admin'),
+        ]);
+
+        return redirect()->route('admin.users.index')->with('success', 'Пользователь создан');
+    }
     }
 
     public function edit(User $user)
