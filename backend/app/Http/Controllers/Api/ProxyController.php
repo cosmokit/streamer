@@ -63,7 +63,14 @@ class ProxyController extends Controller
                 continue;
             }
 
+            // Формируем line_raw из данных
+            $lineRaw = $proxyData['host'] . ':' . $proxyData['port'];
+            if (!empty($proxyData['username']) && !empty($proxyData['password'])) {
+                $lineRaw = $proxyData['username'] . ':' . $proxyData['password'] . '@' . $lineRaw;
+            }
+
             $user->proxies()->create([
+                'line_raw' => $lineRaw,
                 'host' => $proxyData['host'],
                 'port' => $proxyData['port'],
                 'username' => $proxyData['username'] ?? null,
@@ -100,6 +107,19 @@ class ProxyController extends Controller
         return response()->json([
             'message' => "Активировано прокси: {$pendingCount}",
             'activated' => $pendingCount,
+        ]);
+    }
+
+    public function destroy(Proxy $proxy)
+    {
+        if ($proxy->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $proxy->delete();
+
+        return response()->json([
+            'message' => 'Прокси удален'
         ]);
     }
 }
