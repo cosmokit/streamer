@@ -14,16 +14,32 @@
 <div class="card">
     <div class="card-body">
         <form method="GET" class="mb-4">
-            <div class="input-group">
-                <input type="text" name="search" class="form-control" placeholder="Поиск по имени или email..." value="{{ request('search') }}">
-                <button class="btn btn-primary" type="submit">
-                    <i class="bi bi-search"></i> Поиск
-                </button>
-                @if(request('search'))
-                    <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
-                        <i class="bi bi-x"></i> Сбросить
-                    </a>
-                @endif
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <input type="text" name="search" class="form-control" placeholder="Поиск по имени или email..." value="{{ request('search') }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="stream_days" class="form-select">
+                        <option value="">Все стримы</option>
+                        <option value="0" {{ request('stream_days') === '0' ? 'selected' : '' }}>0 дней</option>
+                        <option value="1" {{ request('stream_days') === '1' ? 'selected' : '' }}>1 день</option>
+                        <option value="2" {{ request('stream_days') === '2' ? 'selected' : '' }}>2 дня</option>
+                        <option value="3" {{ request('stream_days') === '3' ? 'selected' : '' }}>3 дня</option>
+                        <option value="4" {{ request('stream_days') === '4' ? 'selected' : '' }}>4+ дней</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="btn-group w-100">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-search"></i> Поиск
+                        </button>
+                        @if(request('search') || request('stream_days'))
+                            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
+                                <i class="bi bi-x"></i> Сбросить
+                            </a>
+                        @endif
+                    </div>
+                </div>
             </div>
         </form>
 
