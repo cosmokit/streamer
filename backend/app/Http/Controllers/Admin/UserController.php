@@ -10,7 +10,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query();
+        $query = User::query()->withCount(['proxies', 'streamRuns', 'videos']);
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -22,36 +22,69 @@ class UserController extends Controller
             });
         }
 
+        if ($request->has('stream_days') && $request->stream_days !== '') {
+            $streamDays = (int) $request->stream_days;
+            
+            if ($streamDays === 0) {
+                $query->whereDoesntHave('streamRuns');
+            } elseif ($streamDays >= 1 && $streamDays <= 3) {
+                $query->whereHas('streamRuns', function($q) use ($streamDays) {
+                    $q->select('user_id')
+                      ->groupBy('user_id')
+                      ->havingRaw('COUNT(*) = ?', [$streamDays]);
+                });
+            } elseif ($streamDays === 4) {
+                $query->whereHas('streamRuns', function($q) {
+                    $q->select('user_id')
+                      ->groupBy('user_id')
+                      ->havingRaw('COUNT(*) >= 4');
+                });
+            }
+        }
+
         $users = $query->orderBy('created_at', 'desc')->paginate(20);
         return view('admin.users.index', compact('users'));
     }
 
     public function create()
     {
-        return view('admin.users.create');
+        return view('admin.users.generate');
     }
 
-    public function store(Request $request)
+    public function generate(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
             'telegram' => 'nullable|string|max:255',
             'twitch' => 'nullable|string|max:255',
             'is_admin' => 'boolean',
         ]);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => \Hash::make($request->password),
+        // Generate random username
+        $username = 'user_' . rand(10000, 99999);
+        
+        // Generate random password (8 characters, letters + numbers)
+        $password = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
+        
+        // Generate random email
+        $email = $username . '@example.com';
+
+        $user = User::create([
+            'name' => $username,
+            'email' => $email,
+            'password' => \Hash::make($password),
             'telegram' => $request->telegram,
             'twitch' => $request->twitch,
             'is_admin' => $request->boolean('is_admin'),
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'Пользователь создан');
+        return redirect()->route('admin.users.edit', $user)
+            ->with('success', 'Пользователь создан')
+            ->with('generated_credentials', [
+                'username' => $username,
+                'password' => $password,
+                'telegram' => $request->telegram,
+                'twitch' => $request->twitch,
+            ]);
     }
 
     public function edit(User $user)
@@ -156,35 +189,26 @@ class UserController extends Controller
     public function generateProxies(Request $request, User $user)
     {
         $request->validate([
-            'format' => 'required|in:txt,json,csv',
-            'count' => 'nullable|integer|min:1|max:100',
+            'count' => 'required|integer|min:1|max:100',
+            'status' => 'required|in:pending,active',
         ]);
 
-        $format = $request->format;
-        $count = $request->count ?? 11;
+        $count = $request->count;
+        $status = $request->status;
         $proxies = $this->generateRealisticProxies($count);
 
-        $timestamp = date('Ymd_His');
-        $filename = "proxies_user_{$user->id}_{$timestamp}.{$format}";
-        
-        $content = '';
-        $contentType = 'text/plain';
-
-        if ($format === 'txt') {
-            $content = implode("\n", array_map(fn($p) => "{$p['host']}:{$p['port']}:{$p['username']}:{$p['password']}", $proxies));
-            $contentType = 'text/plain';
-        } elseif ($format === 'json') {
-            $content = json_encode($proxies, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-            $contentType = 'application/json';
-        } elseif ($format === 'csv') {
-            $content = "host,port,username,password\n";
-            $content .= implode("\n", array_map(fn($p) => "{$p['host']},{$p['port']},{$p['username']},{$p['password']}", $proxies));
-            $contentType = 'text/csv';
+        // Save proxies to database
+        foreach ($proxies as $proxy) {
+            $user->proxies()->create([
+                'host' => $proxy['host'],
+                'port' => $proxy['port'],
+                'username' => $proxy['username'],
+                'password' => $proxy['password'],
+                'status' => $status,
+            ]);
         }
 
-        return response($content)
-            ->header('Content-Type', $contentType)
-            ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
+        return back()->with('success', "Создано прокси: {$count}");
     }
 
     private function generateRealisticProxies($count = 11)
@@ -210,5 +234,42 @@ class UserController extends Controller
         }
 
         return $proxies;
+    }
+
+    public function downloadProxyFile(User $user)
+    {
+        $filePath = storage_path("app/proxy_uploads/{$user->id}/proxies.txt");
+        
+        if (!file_exists($filePath)) {
+            return back()->with('error', 'Файл прокси не найден');
+        }
+        
+        return response()->download($filePath, "proxies_user_{$user->id}.txt");
+    }
+
+    public function impersonate(User $user)
+    {
+        if ($user->is_admin) {
+            return back()->with('error', 'Нельзя войти под администратором');
+        }
+        
+        session(['impersonate_admin_id' => auth()->id()]);
+        auth()->login($user);
+        
+        return redirect('/dashboard')->with('success', "Вы вошли как пользователь: {$user->name}");
+    }
+
+    public function stopImpersonate()
+    {
+        $adminId = session('impersonate_admin_id');
+        
+        if (!$adminId) {
+            return redirect('/dashboard');
+        }
+        
+        session()->forget('impersonate_admin_id');
+        auth()->loginUsingId($adminId);
+        
+        return redirect()->route('admin.users.index')->with('success', 'Вы вернулись в админку');
     }
 }

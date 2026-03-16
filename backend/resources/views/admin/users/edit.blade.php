@@ -7,6 +7,22 @@
     <h2><i class="bi bi-pencil me-2"></i>Редактировать пользователя</h2>
 </div>
 
+@if(session('generated_credentials'))
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <h5 class="alert-heading"><i class="bi bi-check-circle me-2"></i>Пользователь успешно создан!</h5>
+    <hr>
+    <p class="mb-2"><strong>Логин:</strong> {{ session('generated_credentials')['username'] }}</p>
+    <p class="mb-2"><strong>Пароль:</strong> {{ session('generated_credentials')['password'] }}</p>
+    @if(session('generated_credentials')['twitch'])
+    <p class="mb-2"><strong>Twitch-канал:</strong> <a href="https://www.twitch.tv/{{ session('generated_credentials')['twitch'] }}" target="_blank">https://www.twitch.tv/{{ session('generated_credentials')['twitch'] }}</a></p>
+    @endif
+    @if(session('generated_credentials')['telegram'])
+    <p class="mb-2"><strong>Telegram:</strong> @{{ session('generated_credentials')['telegram'] }}</p>
+    @endif
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+@endif
+
 <div class="card">
     <div class="card-body">
         <form method="POST" action="{{ route('admin.users.update', $user) }}">
@@ -85,6 +101,14 @@
                 <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
                     <i class="bi bi-x-lg"></i> Отмена
                 </a>
+                @if(!$user->is_admin)
+                <form method="POST" action="{{ route('admin.users.impersonate', $user) }}" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-person-circle"></i> Войти как пользователь
+                    </button>
+                </form>
+                @endif
             </div>
         </form>
     </div>
@@ -109,9 +133,12 @@
             <i class="bi bi-hdd-network me-2"></i>Управление прокси
         </h5>
         
-        <div class="mb-4">
+        <div class="mb-4 d-flex gap-2">
             <a href="{{ route('admin.users.proxies', $user) }}" class="btn btn-primary">
                 <i class="bi bi-list-ul"></i> Просмотр прокси пользователя ({{ $user->proxies()->count() }})
+            </a>
+            <a href="{{ route('admin.users.download-proxy-file', $user) }}" class="btn btn-secondary">
+                <i class="bi bi-download"></i> Скачать файл прокси
             </a>
         </div>
         
@@ -119,20 +146,23 @@
         
         <h6 class="mb-2">Генератор прокси</h6>
         <p class="text-muted small mb-3">
-            Сгенерировать и скачать список из 11 реалистичных прокси
+            Сгенерировать прокси и добавить в базу данных
         </p>
         <form method="POST" action="{{ route('admin.users.generate-proxies', $user) }}" class="d-flex gap-2 align-items-end">
             @csrf
             <div>
-                <label class="form-label small">Формат файла</label>
-                <select name="format" class="form-select form-select-sm">
-                    <option value="txt">TXT (IP:PORT:USER:PASS)</option>
-                    <option value="csv">CSV (таблица)</option>
-                    <option value="json">JSON (объекты)</option>
+                <label class="form-label small">Количество</label>
+                <input type="number" name="count" class="form-control form-control-sm" value="11" min="1" max="100">
+            </div>
+            <div>
+                <label class="form-label small">Статус</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="pending">Pending</option>
+                    <option value="active">Active</option>
                 </select>
             </div>
             <button type="submit" class="btn btn-success">
-                <i class="bi bi-download"></i> Создать и скачать
+                <i class="bi bi-plus-circle"></i> Создать
             </button>
         </form>
     </div>

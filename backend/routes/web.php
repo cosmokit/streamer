@@ -45,6 +45,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
     Route::resource('users', UserController::class);
+    Route::post('users/{user}/generate', [UserController::class, 'generate'])->name('users.generate');
     Route::post('users/{user}/toggle-ban', [UserController::class, 'toggleBan'])->name('users.toggle-ban');
     Route::post('users/{user}/generate-proxies', [UserController::class, 'generateProxies'])->name('users.generate-proxies');
     Route::get('users/{user}/proxies', [UserController::class, 'proxies'])->name('users.proxies');
@@ -53,6 +54,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::delete('users/{user}/proxies', [UserController::class, 'deleteAllProxies'])->name('users.delete-all-proxies');
     Route::get('users/{user}/progress', [UserController::class, 'progress'])->name('users.progress');
     Route::post('users/{user}/progress/{userProgress}/confirm', [UserController::class, 'confirmProgress'])->name('users.progress.confirm');
+    Route::get('users/{user}/proxy-file/download', [UserController::class, 'downloadProxyFile'])->name('users.download-proxy-file');
+    Route::post('users/{user}/impersonate', [UserController::class, 'impersonate'])->name('users.impersonate');
+    Route::post('stop-impersonate', [UserController::class, 'stopImpersonate'])->name('stop-impersonate');
     
     Route::resource('help', HelpArticleController::class);
     Route::resource('templates', AdminTemplateController::class);
@@ -84,6 +88,7 @@ Route::prefix('api')->group(function () {
 
         Route::get('/stream-runs', [\App\Http\Controllers\Api\StreamRunController::class, 'index']);
         Route::post('/stream-runs/start', [\App\Http\Controllers\Api\StreamRunController::class, 'start']);
+        Route::post('/stream-runs/stop', [\App\Http\Controllers\Api\StreamRunController::class, 'stop']);
 
         Route::get('/notifications', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
         Route::post('/notifications/{notification}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
