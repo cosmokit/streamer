@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Play, Globe, Bell, Zap, AlertCircle } from "lucide-react";
+import { Play, Square, Globe, Bell, Zap, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Notification {
@@ -12,10 +12,12 @@ const TrafficPage = () => {
   const [twitchLink, setTwitchLink] = useState("");
   const [xLink, setXLink] = useState("");
   const [currentDay, setCurrentDay] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
   const [loading, setLoading] = useState(false);
   const [starting, setStarting] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showSupportMessage, setShowSupportMessage] = useState(false);
+  const [showProxyModal, setShowProxyModal] = useState(false);
   const totalDays = 4;
 
   useEffect(() => {
@@ -31,6 +33,7 @@ const TrafficPage = () => {
       .then(res => res.json())
       .then(data => {
         setCurrentDay(data.current_day || 0);
+        setIsRunning(data.is_running || false);
         if (data.twitch_url) {
           setTwitchLink(data.twitch_url);
         }
@@ -58,6 +61,7 @@ const TrafficPage = () => {
 
     setStarting(true);
     setShowSupportMessage(false);
+    setShowProxyModal(false);
 
     fetch('/api/stream-runs/start', {
       method: 'POST',
@@ -83,7 +87,14 @@ const TrafficPage = () => {
       .catch(err => {
         console.error('Error starting stream:', err);
         
-        if (err.error_type === 'no_api_key' || err.error_type === 'nezhna_error' || err.error_type === 'connection_error' || err.error_type === 'no_twitch') {
+        if (err.error_type === 'insufficient_proxies') {
+          setShowProxyModal(true);
+          toast({ 
+            title: "Недостаточно прокси", 
+            description: err.message,
+            variant: "destructive"
+          });
+        } else if (err.error_type === 'no_api_key' || err.error_type === 'nezhna_error' || err.error_type === 'connection_error' || err.error_type === 'no_twitch') {
           setShowSupportMessage(true);
           toast({ 
             title: "Требуется помощь", 
@@ -97,6 +108,35 @@ const TrafficPage = () => {
             variant: "destructive" 
           });
         }
+        setStarting(false);
+      });
+  };
+
+  const handleStopStream = () => {
+    setStarting(true);
+
+    fetch('/api/stream-runs/stop', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        toast({ title: "Успешно", description: data.message });
+        setStarting(false);
+        loadStreamData();
+        loadNotifications();
+      })
+      .catch(err => {
+        console.error('Error stopping stream:', err);
+        toast({ 
+          title: "Ошибка", 
+          description: "Не удалось завершить стрим", 
+          variant: "destructive" 
+        });
         setStarting(false);
       });
   };
@@ -140,13 +180,29 @@ const TrafficPage = () => {
       <div className="glass-card rounded-xl p-6 mb-6">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-lg flex items-center justify-center glow-btn">
-            <Play size={20} color="#fff" />
+            {isRunning ? <Square size={20} color="#fff" /> : <Play size={20} color="#fff" />}
           </div>
-          <h2 className="text-xl font-bold" style={{ color: "hsl(260 20% 90%)" }}>Запустить Стрим</h2>
+          <h2 className="text-xl font-bold" style={{ color: "hsl(260 20% 90%)" }}>
+            {isRunning ? 'Завершить Стрим' : 'Запустить Стрим'}
+          </h2>
         </div>
         <p className="text-sm mb-4" style={{ color: "hsl(260 15% 50%)" }}>
           До компаньона запускайте трансляцию на 2 часа, после получения статуса компаньона на 8-10 часов после 20-00 по мск
         </p>
+        
+        {showProxyModal && (
+          <div className="mb-4 p-4 rounded-lg flex items-start gap-3" style={{ background: "hsl(0 60% 45% / 0.08)", border: "1px solid hsl(0 60% 50% / 0.2)" }}>
+            <AlertCircle size={20} style={{ color: "hsl(0 90% 65%)", flexShrink: 0, marginTop: "2px" }} />
+            <div>
+              <p className="text-sm font-medium mb-1" style={{ color: "hsl(0 90% 65%)" }}>
+                Недостаточно прокси
+              </p>
+              <p className="text-xs" style={{ color: "hsl(0 90% 55%)" }}>
+                Для начала следующего стрима Вам необходимо предоставить 65 резидентных прокси IPS USA. Для помощи в данном вопросе обратитесь к @chillkiller_v
+              </p>
+            </div>
+          </div>
+        )}
         
         {showSupportMessage && (
           <div className="mb-4 p-4 rounded-lg flex items-start gap-3" style={{ background: "hsl(45 60% 45% / 0.08)", border: "1px solid hsl(45 60% 50% / 0.2)" }}>
@@ -182,13 +238,15 @@ const TrafficPage = () => {
             color: "hsl(260 20% 90%)",
             border: "1px solid hsl(270 25% 20%)",
           }}
+          disabled={isRunning}
         />
         <button 
-          onClick={handleStartStream}
+          onClick={isRunning ? handleStopStream : handleStartStream}
           disabled={starting}
           className="w-full py-3 rounded-lg font-semibold text-white glow-btn disabled:opacity-50"
+          style={isRunning ? { background: "hsl(0 60% 50%)" } : {}}
         >
-          {starting ? 'Запуск...' : 'Запустить Стрим'}
+          {starting ? (isRunning ? 'Завершение...' : 'Запуск...') : (isRunning ? 'Завершить Стрим' : 'Запустить Стрим')}
         </button>
       </div>
 

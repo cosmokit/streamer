@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\StreamRun;
 use App\Models\Notification;
 use App\Models\Setting;
+use App\Services\NezhaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class StreamRunController extends Controller
@@ -16,14 +16,24 @@ class StreamRunController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $currentDay = StreamRun::where('user_id', $user->id)->count();
-        $lastRun = StreamRun::where('user_id', $user->id)
-            ->latest()
-            ->first();
+        
+        $streamRuns = StreamRun::where('user_id', $user->id)
+            ->orderBy('day_index', 'desc')
+            ->get();
+        
+        $currentDay = $streamRuns->count();
+        $lastRun = $streamRuns->first();
+        
+        // Check if stream is running (created within last 12 hours)
+        $isRunning = false;
+        if ($lastRun && $lastRun->created_at->diffInHours(now()) < 12) {
+            $isRunning = true;
+        }
         
         return response()->json([
             'current_day' => $currentDay,
             'twitch_url' => $lastRun ? $lastRun->twitch_url : null,
+            'is_running' => $isRunning,
         ]);
     }
 
@@ -42,13 +52,18 @@ class StreamRunController extends Controller
             ], 400);
         }
 
-        $nezhnaApiKey = Setting::get('nezhna_api_key');
-        
-        if (!$nezhnaApiKey) {
-            return response()->json([
-                'message' => 'Сервис временно недоступен. Пожалуйста, обратитесь в поддержку.',
-                'error_type' => 'no_api_key',
-            ], 503);
+        // Before 4th stream, check if user has >= 65 active proxies
+        if ($currentDay == 4) {
+            $activeProxiesCount = $user->proxies()->where('status', 'active')->count();
+            
+            if ($activeProxiesCount < 65) {
+                return response()->json([
+                    'message' => 'Для начала следующего стрима Вам необходимо предоставить 65 резидентных прокси IPS USA. Для помощи в данном вопросе обратитесь к @chillkiller_v',
+                    'error_type' => 'insufficient_proxies',
+                    'required_proxies' => 65,
+                    'current_proxies' => $activeProxiesCount,
+                ], 400);
+            }
         }
 
         $twitchChannel = $user->twitch;
@@ -60,37 +75,21 @@ class StreamRunController extends Controller
             ], 400);
         }
 
+        // Call Nezhna service to purchase
         try {
-            $response = Http::timeout(10)
-                ->withHeaders([
-                    'Authorization' => 'Bearer ' . $nezhnaApiKey,
-                    'Accept' => 'application/json',
-                ])
-                ->post('https://nezhna.com/api/v1/traffic/start', [
-                    'twitch_channel' => $twitchChannel,
-                    'twitch_url' => $request->twitch_url,
-                    'user_id' => $user->id,
-                ]);
-
-            if (!$response->successful()) {
-                Log::error('Nezhna API error', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-                
-                return response()->json([
-                    'message' => 'Не удалось запустить трафик. Обратитесь в поддержку.',
-                    'error_type' => 'nezhna_error',
-                ], 503);
-            }
+            $nezhaService = new NezhaService();
+            $nezhaService->purchaseService(
+                serviceId: 1, // Default service ID
+                count: 1,
+                username: $user->name,
+                email: $user->email
+            );
         } catch (\Exception $e) {
-            Log::error('Nezhna API exception', [
-                'message' => $e->getMessage(),
-            ]);
+            Log::error('Nezhna purchase error: ' . $e->getMessage());
             
             return response()->json([
-                'message' => 'Не удалось подключиться к сервису. Обратитесь в поддержку.',
-                'error_type' => 'connection_error',
+                'message' => 'Не удалось запустить трафик. Обратитесь в поддержку.',
+                'error_type' => 'nezhna_error',
             ], 503);
         }
 
@@ -109,6 +108,29 @@ class StreamRunController extends Controller
             'message' => 'Трансляция успешно запущена',
             'day_index' => $currentDay,
             'data' => $streamRun,
+        ]);
+    }
+
+    public function stop(Request $request)
+    {
+        $user = Auth::user();
+        $lastRun = StreamRun::where('user_id', $user->id)
+            ->latest()
+            ->first();
+        
+        if (!$lastRun) {
+            return response()->json([
+                'message' => 'Нет активного стрима',
+            ], 400);
+        }
+
+        Notification::create([
+            'user_id' => $user->id,
+            'message' => "Трансляция завершена (День {$lastRun->day_index})",
+        ]);
+
+        return response()->json([
+            'message' => 'Трансляция завершена',
         ]);
     }
 }
