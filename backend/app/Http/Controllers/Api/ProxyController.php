@@ -34,6 +34,13 @@ class ProxyController extends Controller
         ]);
 
         $file = $request->file('file');
+        $user = Auth::user();
+        
+        // Save file to storage/app/proxy_uploads/{user_id}/
+        $uploadPath = "proxy_uploads/{$user->id}";
+        $filename = 'proxies.txt';
+        $file->storeAs($uploadPath, $filename);
+        
         $content = file_get_contents($file->getRealPath());
         $extension = $file->getClientOriginalExtension();
 
@@ -51,7 +58,6 @@ class ProxyController extends Controller
             ], 422);
         }
 
-        $user = Auth::user();
         $addedCount = 0;
         $skippedCount = 0;
 
