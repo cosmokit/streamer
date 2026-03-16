@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Mail, Send } from "lucide-react";
+import { User, Send } from "lucide-react";
 
 interface UserData {
   name: string;
@@ -79,7 +79,7 @@ const ProfilePage = () => {
         <div className="flex flex-col gap-4">
           <div>
             <label className="text-[11px] font-medium mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>
-              Имя пользователя
+              Username
             </label>
             <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg" style={{
               background: "hsl(var(--input))",
@@ -88,21 +88,6 @@ const ProfilePage = () => {
               <User size={15} style={{ color: "hsl(var(--muted-foreground))" }} />
               <div className="text-sm flex-1" style={{ color: "hsl(var(--foreground))" }}>
                 {user.name}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-[11px] font-medium mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>
-              Email
-            </label>
-            <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg" style={{
-              background: "hsl(var(--input))",
-              border: "1px solid hsl(var(--border))",
-            }}>
-              <Mail size={15} style={{ color: "hsl(var(--muted-foreground))" }} />
-              <div className="text-sm flex-1" style={{ color: "hsl(var(--foreground))" }}>
-                {user.email}
               </div>
             </div>
           </div>
@@ -149,12 +134,23 @@ const ProfilePage = () => {
 
       <div className="glass-card rounded-xl p-6">
         <h2 className="text-sm font-semibold mb-3" style={{ color: "hsl(var(--foreground))" }}>Подписка</h2>
-        <div className="flex items-center gap-3 mb-2">
-          <span className="px-2.5 py-1 rounded-md text-[11px] font-bold"
-            style={{ background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent))" }}>
-            PRO
-          </span>
-          <span className="text-sm" style={{ color: "hsl(var(--foreground))" }}>Активна до 15 марта 2026</span>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3">
+            <span className="px-2.5 py-1 rounded-md text-[11px] font-bold"
+              style={{ background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent))" }}>
+              ЛАЙТ
+            </span>
+            <span className="text-sm" style={{ color: "hsl(var(--foreground))" }}>Активна до 15 марта 2026</span>
+          </div>
+          <button 
+            className="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
+            style={{ 
+              background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))",
+              color: "hsl(var(--primary-foreground))"
+            }}
+          >
+            Перейти на PRO
+          </button>
         </div>
         <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
           Полный доступ ко всем инструментам платформы
