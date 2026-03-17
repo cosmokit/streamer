@@ -3,6 +3,12 @@
 @section('title', 'Создать шаблон')
 
 @section('content')
+<div class="mb-4">
+    <a href="{{ route('admin.templates.index') }}" class="btn btn-light shadow-sm" style="font-weight: 600;">
+        <i class="bi bi-arrow-left"></i> Назад
+    </a>
+</div>
+
 <div class="page-header">
     <h2><i class="bi bi-plus-lg me-2"></i>Создать шаблон</h2>
 </div>

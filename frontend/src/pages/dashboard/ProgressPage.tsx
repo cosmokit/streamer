@@ -93,6 +93,11 @@ const ProgressPage = () => {
       });
   };
 
+  const getStepIcon = (order: number) => {
+    const icons = ['📋', '🎮', '🖥️', '❓'];
+    return icons[order - 1] || '📚';
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
@@ -120,28 +125,28 @@ const ProgressPage = () => {
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl">
+    <div className="p-4 md:p-6 lg:p-8 w-full">
       <div className="flex items-center gap-3 mb-2">
         <Sparkles size={24} style={{ color: "hsl(90 85% 55%)" }} />
         <h1 className="text-xl md:text-2xl font-bold glow-text" style={{ color: "hsl(260 20% 93%)" }}>Мой прогресс</h1>
       </div>
 
       {/* Phase indicators */}
-      <div className="flex items-center justify-between mb-8 max-w-md mx-auto mt-8">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold glow-btn text-white">1</div>
-          <span className="text-xs text-center" style={{ color: "hsl(260 15% 60%)" }}>Станьте частью<br />нашей команды</span>
+      <div className="flex items-center justify-between mb-10 max-w-2xl mx-auto mt-10">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold glow-btn text-white">1</div>
+          <span className="text-sm text-center font-medium" style={{ color: "hsl(260 15% 60%)" }}>Станьте частью<br />нашей команды</span>
         </div>
-        <div className="flex-1 h-px mx-4" style={{
+        <div className="flex-1 h-0.5 mx-6" style={{
           background: "linear-gradient(90deg, hsl(90 85% 45% / 0.4), hsl(270 50% 20% / 0.2))"
         }} />
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{
-            background: monetizationUnlocked ? "linear-gradient(135deg, hsl(270 75% 50%), hsl(90 85% 40%))" : "hsl(270 18% 12%)",
-            color: monetizationUnlocked ? "#fff" : "hsl(260 15% 45%)",
-            border: monetizationUnlocked ? "none" : "1px solid hsl(270 25% 20%)"
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold" style={{
+            background: "hsl(270 18% 12%)",
+            color: "hsl(260 15% 45%)",
+            border: "2px solid hsl(270 25% 20%)"
           }}>2</div>
-          <span className="text-xs" style={{ color: monetizationUnlocked ? "hsl(260 15% 60%)" : "hsl(260 15% 35%)" }}>Монетизация</span>
+          <span className="text-sm font-medium" style={{ color: "hsl(260 15% 35%)" }}>Монетизация</span>
         </div>
       </div>
 
@@ -161,60 +166,37 @@ const ProgressPage = () => {
           }} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {steps.map((step) => (
-            <div key={step.id} className="glass-card glass-card-hover rounded-xl p-5 transition-all duration-300 group">
-              <div className="flex items-start gap-4">
-                <div className="text-3xl flex-shrink-0 mt-1">📚</div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
+            <div key={step.id} className="glass-card glass-card-hover rounded-xl p-4 md:p-5 transition-all duration-300 group">
+              <div className="flex items-start gap-3 md:gap-4">
+                <div className="text-2xl md:text-3xl flex-shrink-0 mt-1">{getStepIcon(step.order)}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-start gap-2 mb-2">
                     <h3 className="font-semibold text-sm" style={{ color: "hsl(260 20% 90%)" }}>{step.title}</h3>
                     {getStatusBadge(step.status)}
                   </div>
                   <p className="text-xs mb-4" style={{ color: "hsl(260 15% 50%)" }}>{step.description}</p>
-                  <div className="flex gap-2">
-                    {step.status === 'completed' ? (
-                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style={{ background: "hsl(90 85% 45% / 0.1)", color: "hsl(90 85% 60%)" }}>
-                        <CheckCircle2 size={14} />
-                        <span className="text-xs font-medium">Подтверждено</span>
-                      </div>
-                    ) : step.status === 'awaiting_confirmation' ? (
-                      <div className="px-3 py-1.5 rounded-lg text-xs" style={{ background: "hsl(45 90% 50% / 0.1)", color: "hsl(45 90% 60%)" }}>
-                        Ожидает проверки администратора
-                      </div>
-                    ) : (
-                      <>
-                        <button 
-                          onClick={() => handleStart(step)}
-                          disabled={loadingAction === step.id}
-                          className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5"
-                          style={{
-                            background: "hsl(270 25% 14%)",
-                            color: "hsl(260 15% 75%)",
-                            border: "1px solid hsl(270 25% 22%)"
-                          }}
-                        >
-                          <ExternalLink size={12} />
-                          {loadingAction === step.id ? 'Загрузка...' : 'Начать обучение'}
-                        </button>
-                        {step.status === 'in_progress' && (
-                          <button
-                            onClick={() => handleComplete(step.id)}
-                            disabled={loadingAction === step.id}
-                            className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5"
-                            style={{
-                              background: "linear-gradient(135deg, hsl(270 75% 50%), hsl(90 85% 40%))",
-                              color: "#fff",
-                              border: "none",
-                              boxShadow: "0 0 15px hsl(270 75% 50% / 0.2)",
-                            }}
-                          >
-                            <CheckCircle2 size={12} />
-                            {loadingAction === step.id ? 'Загрузка...' : 'Отметить как выполненное'}
-                          </button>
-                        )}
-                      </>
-                    )}
+                  <div className="flex flex-wrap gap-2">
+                    <button className="px-3 md:px-4 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap" style={{
+                      background: "hsl(270 25% 14%)",
+                      color: "hsl(260 15% 75%)",
+                      border: "1px solid hsl(270 25% 22%)"
+                    }}>Начать обучение</button>
+                    <button
+                      onClick={() => handleComplete(step.id)}
+                      disabled={loadingAction === step.id}
+                      className="px-3 md:px-4 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 whitespace-nowrap"
+                      style={{
+                        background: step.status === 'completed' ? "hsl(90 85% 35% / 0.2)" : "linear-gradient(135deg, hsl(270 75% 50%), hsl(90 85% 40%))",
+                        color: step.status === 'completed' ? "hsl(90 85% 60%)" : "#fff",
+                        border: step.status === 'completed' ? "1px solid hsl(90 85% 40% / 0.3)" : "none",
+                        boxShadow: step.status === 'completed' ? "none" : "0 0 15px hsl(270 75% 50% / 0.2)",
+                      }}
+                    >
+                      {step.status === 'completed' && <CheckCircle2 size={12} />}
+                      {step.status === 'completed' ? "Выполнено" : "Отметить"}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -223,35 +205,37 @@ const ProgressPage = () => {
         </div>
       </div>
 
-      {/* Monetization section */}
+      {/* Monetization section (locked) */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold" style={{ color: monetizationUnlocked ? "hsl(260 20% 90%)" : "hsl(260 15% 35%)" }}>Монетизация</h2>
-          <span className="text-sm" style={{ color: monetizationUnlocked ? "hsl(90 85% 60%)" : "hsl(260 15% 30%)" }}>
-            {monetizationUnlocked ? 'Открыто' : 'Заблокировано'}
-          </span>
+          <h2 className="text-xl font-bold" style={{ color: "hsl(260 20% 90%)" }}>Монетизация</h2>
+          <span className="text-sm font-medium px-3 py-1 rounded-full glass-card" style={{ color: "hsl(260 15% 60%)" }}>0%</span>
         </div>
-        <div className="w-full h-2 rounded-full mb-6" style={{ background: "hsl(270 18% 10%)" }} />
+        <div className="w-full h-2 rounded-full mb-6" style={{ background: "hsl(270 18% 18%)" }} />
 
-        <div className="glass-card rounded-xl p-6 relative overflow-hidden" style={{ opacity: monetizationUnlocked ? 1 : 0.5 }}>
-          <div className="flex items-start gap-4">
-            <div className="text-3xl flex-shrink-0 mt-1">💰</div>
+        <div className="glass-card rounded-xl p-7 relative overflow-hidden" style={{
+          border: "1px solid hsl(270 75% 50% / 0.35)",
+          boxShadow: "0 0 25px hsl(270 75% 50% / 0.1), inset 0 1px 0 hsl(270 75% 60% / 0.1)",
+        }}>
+          <div className="absolute inset-0 opacity-[0.07]" style={{
+            background: "radial-gradient(circle at top left, hsl(270 75% 55%), transparent 60%)",
+          }} />
+          <div className="flex items-start gap-4 relative">
+            <div className="text-4xl flex-shrink-0 mt-1">💰</div>
             <div className="flex-1">
-              <h3 className="font-semibold mb-1" style={{ color: monetizationUnlocked ? "hsl(260 20% 90%)" : "hsl(260 15% 40%)" }}>
-                Оформляем компаньона Twitch
-              </h3>
-              <p className="text-sm mb-4" style={{ color: monetizationUnlocked ? "hsl(260 15% 60%)" : "hsl(260 15% 35%)" }}>
-                В данной инструкции вы полностью поймёте как правильно заполнять компаньона для получения статуса монетизации в Twitch.
-              </p>
-              {!monetizationUnlocked && (
-                <div className="flex items-center justify-center flex-col gap-2 py-4">
-                  <Lock size={28} style={{ color: "hsl(260 15% 35%)" }} />
-                  <p className="text-xs text-center" style={{ color: "hsl(260 15% 35%)" }}>
-                    Доступно после полного выполнения<br />всех шагов обучения
-                  </p>
-                </div>
-              )}
+              <h3 className="text-lg font-bold mb-1.5" style={{ color: "hsl(260 20% 93%)" }}>Оформляем компаньона Twitch</h3>
+              <p className="text-sm mb-3" style={{ color: "hsl(260 15% 75%)" }}>В данной инструкции вы полностью поймёте как правильно заполнять компаньона для получения статуса монетизации в Twitch.</p>
             </div>
+          </div>
+          <div className="flex items-center justify-center flex-col gap-4 py-8 px-6 rounded-xl mt-4" style={{
+            background: "hsl(270 35% 12% / 0.8)",
+            border: "1px solid hsl(270 75% 50% / 0.25)",
+            boxShadow: "inset 0 0 20px hsl(270 75% 50% / 0.05)",
+          }}>
+            <Lock size={44} style={{ color: "hsl(270 75% 70%)", filter: "drop-shadow(0 0 10px hsl(270 75% 55% / 0.4))" }} />
+            <p className="text-lg md:text-xl text-center font-bold leading-relaxed" style={{ color: "hsl(260 20% 93%)" }}>
+              Доступно после выполнения<br />условий активации (после 4 дней<br />+ активные прокси).
+            </p>
           </div>
         </div>
       </div>

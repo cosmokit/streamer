@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Админ-панель') - PROFITSTREAM</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/bootstrap-icons.css">
     <style>
         body {
             min-height: 100vh;
@@ -86,10 +86,10 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="p-4">
-                <h4 class="text-white mb-4">
+                <h4 class="text-white mb-2">
                     <i class="bi bi-shield-check"></i> PROFIT<span class="text-warning">STREAM</span>
                 </h4>
-                <p class="text-muted small">Админ-панель</p>
+                <p class="text-white small fw-bold" style="opacity: 0.9;">Админ-панель</p>
             </div>
             
             <nav class="nav flex-column">
@@ -117,8 +117,6 @@
             <a href="{{ route('admin.settings.index') }}" class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                 <i class="bi bi-gear"></i> Настройки
             </a>
-            </a>
-                
                 <hr class="my-3 mx-3 border-secondary">
                 
                 <a href="/" class="nav-link">
@@ -153,7 +151,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/bootstrap.bundle.min.js"></script>
     @stack('scripts')
 </body>
 </html>

@@ -170,7 +170,7 @@ const TrafficPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl">
+    <div className="p-4 md:p-6 lg:p-8 w-full">
       <div className="flex items-center gap-3 mb-6">
         <Zap size={24} style={{ color: "hsl(90 85% 55%)" }} />
         <h1 className="text-2xl font-bold glow-text" style={{ color: "hsl(260 20% 93%)" }}>Панель управления</h1>
@@ -276,18 +276,18 @@ const TrafficPage = () => {
             <h2 className="text-lg font-bold" style={{ color: "hsl(260 20% 90%)" }}>Социальные Сети</h2>
           </div>
           <p className="text-sm mb-3" style={{ color: "hsl(260 15% 50%)" }}>Добавьте ссылку на профиль X</p>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <input
               value={xLink}
               onChange={(e) => setXLink(e.target.value)}
               placeholder="https://x.com/yourusername"
-              className="flex-1 px-4 py-2 rounded-lg text-sm outline-none"
+              className="flex-1 min-w-0 px-4 py-2 rounded-lg text-sm outline-none"
               style={{ background: "hsl(270 35% 7%)", color: "hsl(260 20% 90%)", border: "1px solid hsl(270 25% 20%)" }}
             />
             <button 
               onClick={handleSaveSocial}
               disabled={loading}
-              className="px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-50" 
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-50 shrink-0" 
               style={{
                 background: "hsl(270 25% 14%)",
                 color: "hsl(260 15% 75%)",
@@ -308,15 +308,15 @@ const TrafficPage = () => {
               Нет уведомлений
             </p>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               {notifications.map((n, i) => (
-                <div key={n.id} className="px-4 py-2.5 rounded-lg text-sm transition-all" style={{
+                <div key={n.id} className="px-5 py-3.5 rounded-xl transition-all" style={{
                   background: "hsl(270 35% 7%)",
-                  color: "hsl(260 15% 55%)",
                   border: i === 0 ? "1px solid hsl(90 85% 45% / 0.3)" : "1px solid hsl(270 25% 18%)",
-                  boxShadow: i === 0 ? "0 0 10px hsl(90 85% 45% / 0.05)" : "none",
+                  boxShadow: i === 0 ? "0 0 12px hsl(90 85% 45% / 0.08)" : "none",
                 }}>
-                  {n.message}
+                  <span className="text-sm font-semibold block" style={{ color: "hsl(260 20% 88%)" }}>{n.message}</span>
+                  <span className="text-xs font-medium mt-1 block" style={{ color: "hsl(260 15% 50%)" }}>(День {i + 1})</span>
                 </div>
               ))}
             </div>

@@ -80,7 +80,7 @@ class AuthController extends Controller
         ]);
     }
 
-    public function me()
+    public function me(Request $request)
     {
         if (!Auth::check()) {
             return response()->json([
@@ -88,8 +88,21 @@ class AuthController extends Controller
             ], 401);
         }
 
+        $user = Auth::user();
+        $userData = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'telegram' => $user->telegram,
+            'twitch' => $user->twitch,
+            'is_admin' => $user->is_admin,
+            'is_banned' => $user->is_banned,
+            'created_at' => $user->created_at,
+            'updated_at' => $user->updated_at,
+            'is_impersonating' => $request->session()->has('impersonate_admin_id'),
+        ];
+
         return response()->json([
-            "data" => Auth::user(),
+            "data" => $userData,
         ]);
     }
 }

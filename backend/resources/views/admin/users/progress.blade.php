@@ -14,7 +14,6 @@
         <i class="bi bi-graph-up me-2"></i>
         Прогресс: {{ $user->name }}
     </h2>
-    <p class="text-muted">{{ $user->email }}</p>
 </div>
 
 @if(session('success'))

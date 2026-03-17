@@ -9,7 +9,7 @@
 
 <div class="card">
     <div class="card-body">
-        <form method="POST" action="{{ route('admin.users.generate', ['user' => 0]) }}">
+        <form method="POST" action="{{ route('admin.users.generate') }}">
             @csrf
 
             <div class="alert alert-info">

@@ -3,6 +3,12 @@
 @section('title', 'Редактировать статью')
 
 @section('content')
+<div class="mb-4">
+    <a href="{{ route('admin.help.index') }}" class="btn btn-light shadow-sm" style="font-weight: 600;">
+        <i class="bi bi-arrow-left"></i> Назад
+    </a>
+</div>
+
 <div class="page-header">
     <h2><i class="bi bi-pencil me-2"></i>Редактировать статью</h2>
 </div>

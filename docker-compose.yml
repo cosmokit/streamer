@@ -55,6 +55,19 @@ services:
     networks:
       - streamer_network
 
+  playwright:
+    image: streamer-puppeteer:latest
+    working_dir: /tests
+    volumes:
+      - ./tests:/tests
+      - ./screenshots:/screenshots
+    environment:
+      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+    command: tail -f /dev/null
+    networks:
+      - streamer_network
+
 volumes:
   db_data:
 

@@ -7,7 +7,6 @@
     <div class="d-flex justify-content-between align-items-center">
         <div>
             <h2><i class="bi bi-hdd-network me-2"></i>Прокси: {{ $user->name }}</h2>
-            <p class="text-muted mb-0">{{ $user->email }}</p>
         </div>
         <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Назад к профилю

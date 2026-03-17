@@ -4,6 +4,12 @@
 
 @section('content')
 <div class="mb-4">
+    <a href="{{ route('admin.learning-steps.index') }}" class="btn btn-light shadow-sm" style="font-weight: 600;">
+        <i class="bi bi-arrow-left"></i> Назад
+    </a>
+</div>
+
+<div class="mb-4">
     <h2><i class="bi bi-plus-circle me-2"></i>Создать Шаг Обучения</h2>
 </div>
 

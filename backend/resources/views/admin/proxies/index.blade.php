@@ -5,6 +5,7 @@
 @section('content')
 <div class="page-header">
     <h2><i class="bi bi-hdd-network me-2"></i>Управление прокси</h2>
+    <p class="text-muted">Для генерации прокси перейдите на страницу конкретного пользователя</p>
 </div>
 
 @if(session('success'))
@@ -15,14 +16,7 @@
     <div class="card-body">
         <form method="GET" class="row g-3">
             <div class="col-md-4">
-                <select name="user_id" class="form-select">
-                    <option value="">Все пользователи</option>
-                    @foreach($users as $user)
-                        <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>
-                            {{ $user->name }} ({{ $user->email }})
-                        </option>
-                    @endforeach
-                </select>
+                <input type="text" name="username" class="form-control" placeholder="Поиск по username..." value="{{ request('username') }}">
             </div>
             <div class="col-md-3">
                 <select name="status" class="form-select">
@@ -38,15 +32,11 @@
                     <i class="bi bi-funnel"></i> Фильтр
                 </button>
             </div>
-            @if(request('user_id'))
+            @if(request('username') || request('status'))
             <div class="col-md-3">
-                <form method="POST" action="{{ route('admin.proxies.activate-all') }}" class="d-inline w-100">
-                    @csrf
-                    <input type="hidden" name="user_id" value="{{ request('user_id') }}">
-                    <button type="submit" class="btn btn-success w-100" onclick="return confirm('Активировать все прокси pending для этого пользователя?')">
-                        <i class="bi bi-check-all"></i> Активировать все pending
-                    </button>
-                </form>
+                <a href="{{ route('admin.proxies.index') }}" class="btn btn-secondary w-100">
+                    <i class="bi bi-x-lg"></i> Сбросить
+                </a>
             </div>
             @endif
         </form>
@@ -76,7 +66,6 @@
                         <td>{{ $proxy->id }}</td>
                         <td>
                             <strong>{{ $proxy->user->name }}</strong>
-                            <br><small class="text-muted">{{ $proxy->user->email }}</small>
                         </td>
                         <td><code>{{ $proxy->host }}</code></td>
                         <td><code>{{ $proxy->port }}</code></td>

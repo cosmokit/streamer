@@ -20,7 +20,7 @@ const HelpPage = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl">
+    <div className="p-4 md:p-6 lg:p-8 w-full">
       <div className="flex items-center gap-3 mb-6">
         <HelpCircle size={24} style={{ color: "hsl(90 85% 55%)" }} />
         <div>

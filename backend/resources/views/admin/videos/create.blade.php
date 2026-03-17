@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="mb-4">
-    <a href="{{ route('admin.videos.index') }}" class="btn btn-outline-secondary">
+    <a href="{{ route('admin.videos.index') }}" class="btn btn-light shadow-sm" style="font-weight: 600;">
         <i class="bi bi-arrow-left"></i> Назад
     </a>
 </div>

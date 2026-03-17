@@ -10,13 +10,12 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query()->withCount(['proxies', 'streamRuns', 'videos']);
+        $query = User::query()->withCount(['proxies', 'streamRuns']);
 
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
                   ->orWhere('telegram', 'like', "%{$search}%")
                   ->orWhere('twitch', 'like', "%{$search}%");
             });
@@ -168,7 +167,7 @@ class UserController extends Controller
             return back()->with('warning', 'Нет активных прокси');
         }
         
-        $user->proxies()->where('status', 'active')->update(['status' => 'inactive']);
+        $user->proxies()->where('status', 'active')->update(['status' => 'offline']);
         
         return back()->with('success', "Деактивировано прокси: {$activeCount}");
     }
@@ -197,13 +196,14 @@ class UserController extends Controller
         $status = $request->status;
         $proxies = $this->generateRealisticProxies($count);
 
-        // Save proxies to database
         foreach ($proxies as $proxy) {
+            $lineRaw = "{$proxy['host']}:{$proxy['port']}:{$proxy['username']}:{$proxy['password']}";
             $user->proxies()->create([
                 'host' => $proxy['host'],
                 'port' => $proxy['port'],
                 'username' => $proxy['username'],
                 'password' => $proxy['password'],
+                'line_raw' => $lineRaw,
                 'status' => $status,
             ]);
         }

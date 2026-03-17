@@ -171,15 +171,13 @@ const ProxyPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl">
+    <div className="p-4 md:p-6 lg:p-8 w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
           <Shield size={24} style={{ color: "hsl(90 85% 55%)" }} />
           <div>
             <h1 className="text-xl md:text-2xl font-bold glow-text" style={{ color: "hsl(260 20% 93%)" }}>Мои Прокси</h1>
-            <p className="text-sm" style={{ color: "hsl(260 15% 50%)" }}>
-              Всего: {summary.total} | Ожидают: {summary.pending} | Онлайн: {summary.online} | Офлайн: {summary.offline}
-            </p>
+            <p className="text-sm" style={{ color: "hsl(260 15% 50%)" }}>Управление вашими прокси-подключениями</p>
           </div>
         </div>
         <div className="flex gap-2">

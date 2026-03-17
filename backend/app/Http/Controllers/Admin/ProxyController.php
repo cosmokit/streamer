@@ -13,18 +13,19 @@ class ProxyController extends Controller
     {
         $query = Proxy::with('user');
 
-        if ($request->has('user_id')) {
-            $query->where('user_id', $request->input('user_id'));
+        if ($request->filled('username')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->input('username') . '%');
+            });
         }
 
-        if ($request->has('status')) {
+        if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
         }
 
-        $proxies = $query->orderBy('created_at', 'desc')->paginate(50);
-        $users = User::all();
+        $proxies = $query->orderBy('created_at', 'desc')->paginate(50)->appends($request->query());
 
-        return view('admin.proxies.index', compact('proxies', 'users'));
+        return view('admin.proxies.index', compact('proxies'));
     }
 
     public function activate(Proxy $proxy)
@@ -77,5 +78,48 @@ class ProxyController extends Controller
             ]);
 
         return back()->with('success', "Активировано {$updated} прокси");
+    }
+
+    public function showGenerate()
+    {
+        $users = User::where('is_admin', false)->orderBy('name')->get();
+        return view('admin.proxies.generate', compact('users'));
+    }
+
+    public function generateProxies(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'count' => 'required|integer|min:1|max:200',
+            'status' => 'required|in:pending,active,failed',
+        ]);
+
+        $userId = $request->input('user_id');
+        $count = $request->input('count');
+        $status = $request->input('status');
+
+        $generated = 0;
+        for ($i = 0; $i < $count; $i++) {
+            $host = implode('.', [rand(1, 255), rand(1, 255), rand(1, 255), rand(1, 255)]);
+            $port = rand(8000, 9999);
+            $username = 'user_' . strtolower(\Illuminate\Support\Str::random(6));
+            $password = \Illuminate\Support\Str::random(10);
+            
+            $lineRaw = "{$host}:{$port}:{$username}:{$password}";
+
+            Proxy::create([
+                'user_id' => $userId,
+                'line_raw' => $lineRaw,
+                'host' => $host,
+                'port' => $port,
+                'username' => $username,
+                'password' => $password,
+                'status' => $status,
+                'is_active' => $status === 'active',
+            ]);
+            $generated++;
+        }
+
+        return back()->with('success', "Сгенерировано {$generated} прокси для пользователя");
     }
 }

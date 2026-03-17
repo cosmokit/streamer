@@ -1,4 +1,5 @@
 <?php
+use App\Http\Controllers\SpaController;
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController;
@@ -45,7 +46,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
     Route::resource('users', UserController::class);
-    Route::post('users/{user}/generate', [UserController::class, 'generate'])->name('users.generate');
+    Route::post('users/generate', [UserController::class, 'generate'])->name('users.generate');
     Route::post('users/{user}/toggle-ban', [UserController::class, 'toggleBan'])->name('users.toggle-ban');
     Route::post('users/{user}/generate-proxies', [UserController::class, 'generateProxies'])->name('users.generate-proxies');
     Route::get('users/{user}/proxies', [UserController::class, 'proxies'])->name('users.proxies');
@@ -56,7 +57,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::post('users/{user}/progress/{userProgress}/confirm', [UserController::class, 'confirmProgress'])->name('users.progress.confirm');
     Route::get('users/{user}/proxy-file/download', [UserController::class, 'downloadProxyFile'])->name('users.download-proxy-file');
     Route::post('users/{user}/impersonate', [UserController::class, 'impersonate'])->name('users.impersonate');
-    Route::post('stop-impersonate', [UserController::class, 'stopImpersonate'])->name('stop-impersonate');
     
     Route::resource('help', HelpArticleController::class);
     Route::resource('templates', AdminTemplateController::class);
@@ -64,6 +64,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::resource('learning-steps', \App\Http\Controllers\Admin\LearningStepController::class);
     
     Route::get('proxies', [\App\Http\Controllers\Admin\ProxyController::class, 'index'])->name('proxies.index');
+    Route::get('proxies/generate', [\App\Http\Controllers\Admin\ProxyController::class, 'showGenerate'])->name('proxies.generate');
+    Route::post('proxies/generate', [\App\Http\Controllers\Admin\ProxyController::class, 'generateProxies'])->name('proxies.generate.post');
     Route::post('proxies/{proxy}/activate', [\App\Http\Controllers\Admin\ProxyController::class, 'activate'])->name('proxies.activate');
     Route::post('proxies/{proxy}/deactivate', [\App\Http\Controllers\Admin\ProxyController::class, 'deactivate'])->name('proxies.deactivate');
     Route::post('proxies/{proxy}/update-status', [\App\Http\Controllers\Admin\ProxyController::class, 'updateStatus'])->name('proxies.update-status');
@@ -109,23 +111,12 @@ Route::prefix('api')->group(function () {
 });
 
 // SPA fallback - только для dashboard маршрутов
-
 // SPA routes - добавляем все маршруты фронтенда
-Route::get('/login', function () {
-    return file_get_contents(public_path('app/index.html'));
-});
+Route::get('/login', [SpaController::class, 'index']);
+Route::get('/register', [SpaController::class, 'index']);
+Route::get('/forgot-password', [SpaController::class, 'index']);
+Route::get('/dashboard/{any?}', [SpaController::class, 'index'])->where('any', '.*');
 
-Route::get('/register', function () {
-    return file_get_contents(public_path('app/index.html'));
-});
-
-Route::get('/forgot-password', function () {
-    return file_get_contents(public_path('app/index.html'));
-});
-Route::get('/dashboard/{any?}', function () {
-    return file_get_contents(public_path('app/index.html'));
-})->where('any', '.*');
-
-Route::get('/', function () {
-    return file_get_contents(public_path('app/index.html'));
-});
+// Stop impersonation (доступно для импорсонированных пользователей)
+Route::post('admin/stop-impersonate', [App\Http\Controllers\Admin\UserController::class, 'stopImpersonate'])->middleware('auth')->name('admin.stop-impersonate');
+Route::get('/', [SpaController::class, 'index']);

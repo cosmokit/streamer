@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { BarChart3, Radio, Shield, Layout, Video, HelpCircle, Menu, X, User, LogOut } from "lucide-react";
+import { BarChart3, Radio, Shield, Layout, Video, HelpCircle, Menu, X, User, LogOut, ChevronDown } from "lucide-react";
 import logo from "@/assets/logo.png";
+import SubscriptionBadge from "@/components/SubscriptionBadge";
 
 const navItems = [
   { icon: BarChart3, label: "Мой прогресс", path: "/dashboard/progress" },
@@ -14,6 +15,9 @@ const navItems = [
 
 const DashboardLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [isImpersonating, setIsImpersonating] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,6 +30,13 @@ const DashboardLayout = () => {
           localStorage.removeItem("isAuthenticated");
           localStorage.removeItem("userEmail");
           navigate("/login");
+        } else {
+          return res.json();
+        }
+      })
+      .then(data => {
+        if (data?.data?.is_impersonating) {
+          setIsImpersonating(true);
         }
       })
       .catch(() => {
@@ -35,45 +46,47 @@ const DashboardLayout = () => {
       });
   }, [navigate]);
 
-  const sidebarContent = (
-    <div className="flex flex-col h-full">
-      <NavLink to="/dashboard/progress" className="px-5 py-5 flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer" onClick={() => setMobileOpen(false)}>
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("userEmail");
+    navigate("/login");
+  };
+
+  const sidebarContent = (mobile = false) => (
+    <>
+      <NavLink to="/dashboard/progress" onClick={() => mobile && setMobileOpen(false)} className="px-5 py-5 flex items-center gap-3 no-underline">
         <img src={logo} alt="PS Logo" className="w-10 h-10 object-contain" />
         <span className="text-base font-bold tracking-wide" style={{ color: "hsl(270 75% 75%)" }}>
           PROFIT<span style={{ color: "hsl(90 85% 55%)" }}>STREAM</span>
         </span>
       </NavLink>
-      {/* Profile at top */}
-      <NavLink
-        to="/dashboard/profile"
-        onClick={() => setMobileOpen(false)}
-        className="flex items-center gap-3 mx-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-[hsl(270_35%_18%/0.3)] mb-3"
-        style={({ isActive }) => ({
-          background: isActive
-            ? "linear-gradient(135deg, hsl(270 75% 50% / 0.25), hsl(90 85% 40% / 0.1))"
-            : "hsl(270 25% 12% / 0.5)",
-          color: isActive ? "hsl(90 85% 65%)" : "hsl(260 15% 75%)",
-          border: `1px solid ${isActive ? "hsl(270 45% 28% / 0.5)" : "hsl(270 35% 18% / 0.3)"}`,
-        })}
-      >
-        <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold"
-          style={{ background: "linear-gradient(135deg, hsl(270 75% 50%), hsl(90 85% 40%))", color: "#fff" }}>
-          SP
-        </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold">StreamerPro</span>
-          <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>PRO аккаунт</span>
-        </div>
-      </NavLink>
       <div className="text-[10px] uppercase tracking-widest px-5 pb-3 font-semibold" style={{ color: "hsl(270 15% 35%)" }}>
         Platform
       </div>
-      <nav className="flex flex-col gap-1 px-3 flex-1 min-h-0 overflow-y-auto">
+      <nav className="flex flex-col gap-1 px-3 flex-1">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
-            onClick={() => setMobileOpen(false)}
+            onClick={() => mobile && setMobileOpen(false)}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isActive ? "" : "hover:bg-[hsl(270_35%_18%/0.3)]"
@@ -93,33 +106,33 @@ const DashboardLayout = () => {
           </NavLink>
         ))}
       </nav>
-      <div className="mx-5 mb-4 mt-4 flex-shrink-0">
-        <div className="h-px mb-4" style={{
-          background: "linear-gradient(90deg, transparent, hsl(90 85% 45% / 0.3), hsl(270 75% 50% / 0.3), transparent)"
-        }} />
-        <button
-          onClick={async () => {
-            try {
-              await fetch('/api/logout', {
-                method: 'POST',
-                credentials: 'include',
-              });
-            } catch (error) {
-              console.error('Logout error:', error);
-            }
-            localStorage.removeItem("isAuthenticated");
-            localStorage.removeItem("userEmail");
-            setMobileOpen(false);
-            navigate("/login");
-          }}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-[hsl(0_75%_50%/0.1)] w-full"
-          style={{ color: "hsl(0 75% 60%)" }}
-        >
-          <LogOut size={17} />
-          <span>Выйти</span>
-        </button>
-      </div>
-    </div>
+      {mobile && (
+        <div className="px-3 py-4 mt-auto" style={{ borderTop: "1px solid hsl(270 35% 20% / 0.4)" }}>
+          <button
+            onClick={() => { setMobileOpen(false); navigate("/dashboard/profile"); }}
+            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-[hsl(270_35%_18%/0.3)]"
+            style={{ color: "hsl(260 15% 70%)" }}
+          >
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold"
+              style={{ background: "linear-gradient(135deg, hsl(270 75% 50%), hsl(90 85% 40%))", color: "#fff" }}>
+              SP
+            </div>
+            <div className="flex-1 text-left">
+              <div className="text-sm font-medium" style={{ color: "hsl(260 15% 80%)" }}>StreamerPro</div>
+              <div className="text-[10px] mt-0.5"><SubscriptionBadge tier="lite" size="sm" /></div>
+            </div>
+          </button>
+          <button
+            onClick={() => { setMobileOpen(false); handleLogout(); }}
+            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-[hsl(0_75%_50%/0.1)] mt-1"
+            style={{ color: "hsl(0 75% 60%)" }}
+          >
+            <LogOut size={17} />
+            <span>Выйти</span>
+          </button>
+        </div>
+      )}
+    </>
   );
 
   return (
@@ -200,13 +213,101 @@ const DashboardLayout = () => {
         borderRight: "1px solid hsl(270 35% 20% / 0.5)",
         backdropFilter: "blur(16px)",
       }}>
-        {sidebarContent}
+        {sidebarContent(false)}
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto relative z-10 pt-14 md:pt-0">
-        <Outlet />
-      </main>
+      <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+        {/* Top header with profile */}
+        <header className="hidden md:flex items-center justify-between px-6 py-3 flex-shrink-0 relative z-50" style={{
+          background: "hsl(270 45% 6% / 0.5)",
+          borderBottom: "1px solid hsl(270 35% 20% / 0.3)",
+          backdropFilter: "blur(12px)",
+        }}>
+          {isImpersonating && (
+            <button
+              onClick={async () => {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                await fetch('/admin/stop-impersonate', {
+                  method: 'POST',
+                  credentials: 'include',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken || '',
+                  }
+                });
+                window.location.href = '/admin/users';
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+              style={{
+                background: "linear-gradient(135deg, hsl(270 75% 50%), hsl(90 85% 40%))",
+                color: "#fff",
+                border: "1px solid hsl(270 75% 55% / 0.5)",
+                boxShadow: "0 0 20px hsl(270 75% 55% / 0.3)",
+              }}
+            >
+              <LogOut size={16} />
+              Вернуться в админку
+            </button>
+          )}
+          {!isImpersonating && <div />}
+          <div ref={profileRef} className="relative">
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-all duration-200 hover:bg-[hsl(270_35%_18%/0.4)]"
+              style={{
+                background: profileOpen ? "hsl(270 35% 18% / 0.4)" : "transparent",
+                border: "1px solid hsl(270 35% 20% / 0.3)",
+              }}
+            >
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold"
+                style={{ background: "linear-gradient(135deg, hsl(270 75% 50%), hsl(90 85% 40%))", color: "#fff" }}>
+                SP
+              </div>
+              <span className="text-sm font-medium" style={{ color: "hsl(260 15% 80%)" }}>StreamerPro</span>
+              <ChevronDown size={14} style={{ color: "hsl(260 15% 55%)", transform: profileOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+            </button>
+
+            {profileOpen && (
+              <div className="absolute right-0 top-full mt-2 w-52 rounded-xl overflow-hidden shadow-2xl z-50" style={{
+                background: "linear-gradient(180deg, hsl(270 40% 12%), hsl(270 35% 8%))",
+                border: "1px solid hsl(270 35% 22% / 0.6)",
+              }}>
+                <div className="px-4 py-3" style={{ borderBottom: "1px solid hsl(270 35% 20% / 0.4)" }}>
+                  <div className="text-sm font-semibold" style={{ color: "hsl(260 15% 85%)" }}>StreamerPro</div>
+                  <div className="text-[11px]" style={{ color: "hsl(260 15% 50%)" }}>streamer@example.com</div>
+                  <div className="mt-1.5"><SubscriptionBadge tier="lite" size="sm" /></div>
+                </div>
+                <div className="py-1.5">
+                  <button
+                    onClick={() => { setProfileOpen(false); navigate("/dashboard/profile"); }}
+                    className="flex items-center gap-2.5 w-full px-4 py-2 text-sm transition-colors hover:bg-[hsl(270_35%_20%/0.4)]"
+                    style={{ color: "hsl(260 15% 70%)" }}
+                  >
+                    <User size={15} />
+                    Мой профиль
+                  </button>
+                </div>
+                <div style={{ borderTop: "1px solid hsl(270 35% 20% / 0.4)" }} className="py-1.5">
+                  <button
+                    onClick={() => { setProfileOpen(false); handleLogout(); }}
+                    className="flex items-center gap-2.5 w-full px-4 py-2 text-sm transition-colors hover:bg-[hsl(0_75%_50%/0.1)]"
+                    style={{ color: "hsl(0 75% 60%)" }}
+                  >
+                    <LogOut size={15} />
+                    Выйти
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-auto pt-14 md:pt-0">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };

@@ -3,47 +3,38 @@
 @section('title', 'Шаги Обучения')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-ladder me-2"></i>Шаги Обучения</h2>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h2 class="mb-0"><i class="bi bi-ladder me-2"></i>Шаги Обучения</h2>
     <a href="{{ route('admin.learning-steps.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Создать Шаг
+        <i class="bi bi-plus-lg"></i> Создать Шаг
     </a>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show">
-        <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
 <div class="card">
-    <div class="card-body p-0">
+    <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
+            <table class="table table-hover">
+                <thead>
                     <tr>
-                        <th>№</th>
+                        <th width="80">Порядок</th>
                         <th>Заголовок</th>
                         <th>Описание</th>
-                        <th>URL</th>
-                        <th>Порядок</th>
-                        <th>Статус</th>
-                        <th>Действия</th>
+                        <th width="80">URL</th>
+                        <th width="100">Статус</th>
+                        <th width="150">Действия</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($steps as $step)
                     <tr>
-                        <td>{{ $step->id }}</td>
+                        <td><span class="badge bg-secondary">{{ $step->order }}</span></td>
                         <td>{{ $step->title }}</td>
-                        <td><small class="text-muted">{{ Str::limit($step->description, 50) }}</small></td>
+                        <td>{{ Str::limit($step->description, 60) }}</td>
                         <td>
-                            <a href="{{ $step->external_url }}" target="_blank" class="text-primary text-decoration-none">
-                                <i class="bi bi-box-arrow-up-right"></i>
+                            <a href="{{ $step->external_url }}" target="_blank" class="text-primary">
+                                <i class="bi bi-link-45deg"></i>
                             </a>
                         </td>
-                        <td><span class="badge bg-secondary">{{ $step->order }}</span></td>
                         <td>
                             @if($step->is_active)
                                 <span class="badge bg-success">Активен</span>
@@ -56,11 +47,10 @@
                                 <a href="{{ route('admin.learning-steps.edit', $step) }}" class="btn btn-outline-primary">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form method="POST" action="{{ route('admin.learning-steps.destroy', $step) }}" 
-                                      onsubmit="return confirm('Удалить шаг?')" class="d-inline">
+                                <form method="POST" action="{{ route('admin.learning-steps.destroy', $step) }}" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger">
+                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Удалить шаг?')">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -69,7 +59,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">
+                        <td colspan="6" class="text-center text-muted py-4">
                             <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                             Шаги не найдены
                         </td>
@@ -78,10 +68,8 @@
                 </tbody>
             </table>
         </div>
-    </div>
-</div>
 
-<div class="mt-3">
-    {{ $steps->links() }}
+        {{ $steps->links() }}
+    </div>
 </div>
 @endsection

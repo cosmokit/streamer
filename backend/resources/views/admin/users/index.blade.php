@@ -3,12 +3,10 @@
 @section('title', 'Пользователи')
 
 @section('content')
-<div class="page-header d-flex justify-content-between align-items-center">
-    <h2 class="mb-0"><i class="bi bi-people me-2"></i>Пользователи</h2>
+<div class="d-flex justify-content-end mb-3">
     <a href="{{ route('admin.users.create') }}" class="btn btn-success">
-        <i class="bi bi-person-plus"></i> Создать пользователя
+        <i class="bi bi-magic"></i> Сгенерировать пользователя
     </a>
-</div>
 </div>
 
 <div class="card">
@@ -16,7 +14,7 @@
         <form method="GET" class="mb-4">
             <div class="row g-2">
                 <div class="col-md-6">
-                    <input type="text" name="search" class="form-control" placeholder="Поиск по имени или email..." value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control" placeholder="Поиск по username, Telegram, Twitch..." value="{{ request('search') }}">
                 </div>
                 <div class="col-md-3">
                     <select name="stream_days" class="form-select">
@@ -49,7 +47,6 @@
                     <tr>
                         <th>ID</th>
                         <th>Имя</th>
-                        <th>Email</th>
                         <th>Telegram</th>
                         <th>Twitch</th>
                         <th>Видео</th>
@@ -69,7 +66,6 @@
                                 <span class="badge bg-danger ms-1">Админ</span>
                             @endif
                         </td>
-                        <td>{{ $user->email }}</td>
                         <td><span class="text-muted small">{{ $user->telegram ?? '—' }}</span></td>
                         <td><span class="text-muted small">{{ $user->twitch ?? '—' }}</span></td>
                         <td><span class="badge bg-info">{{ $user->videos_count }}</span></td>

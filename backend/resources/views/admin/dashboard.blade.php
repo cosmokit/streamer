@@ -60,7 +60,6 @@
                     <div class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
                             <strong>{{ $user->name }}</strong><br>
-                            <small class="text-muted">{{ $user->email }}</small>
                         </div>
                         <div>
                             @if($user->is_admin)

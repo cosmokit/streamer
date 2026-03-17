@@ -8,16 +8,20 @@
 </div>
 
 @if(session('generated_credentials'))
-<div class="alert alert-success alert-dismissible fade show" role="alert">
-    <h5 class="alert-heading"><i class="bi bi-check-circle me-2"></i>Пользователь успешно создан!</h5>
-    <hr>
-    <p class="mb-2"><strong>Логин:</strong> {{ session('generated_credentials')['username'] }}</p>
-    <p class="mb-2"><strong>Пароль:</strong> {{ session('generated_credentials')['password'] }}</p>
+<div class="alert alert-success alert-dismissible fade show" role="alert" style="font-size: 15px; line-height: 1.8;">
+    <h4 class="alert-heading mb-3">
+        <i class="bi bi-check-circle-fill me-2"></i>✅ Успех!
+    </h4>
+    <p class="mb-3 fw-bold">Пользователь успешно создан!</p>
+    <p class="mb-2 fw-semibold">Данные нового пользователя:</p>
+    <hr class="my-3">
+    <p class="mb-2"><strong>Логин:</strong> <code class="bg-light px-2 py-1 rounded">{{ session('generated_credentials')['username'] }}</code></p>
+    <p class="mb-2"><strong>Пароль:</strong> <code class="bg-light px-2 py-1 rounded">{{ session('generated_credentials')['password'] }}</code></p>
     @if(session('generated_credentials')['twitch'])
     <p class="mb-2"><strong>Twitch-канал:</strong> <a href="https://www.twitch.tv/{{ session('generated_credentials')['twitch'] }}" target="_blank">https://www.twitch.tv/{{ session('generated_credentials')['twitch'] }}</a></p>
     @endif
     @if(session('generated_credentials')['telegram'])
-    <p class="mb-2"><strong>Telegram:</strong> @{{ session('generated_credentials')['telegram'] }}</p>
+    <p class="mb-2"><strong>Telegram:</strong> {{ session('generated_credentials')['telegram'] }}</p>
     @endif
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
@@ -30,7 +34,7 @@
             @method('PUT')
 
             <div class="mb-3">
-                <label class="form-label">Имя</label>
+                <label class="form-label">Username</label>
                 <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" 
                        value="{{ old('name', $user->name) }}" required>
                 @error('name')
@@ -39,16 +43,7 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" 
-                       value="{{ old('email', $user->email) }}" required>
-                @error('email')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Telegram</label>
+                <label class="form-label">Telegram <span class="text-muted small">(необязательно)</span></label>
                 <input type="text" name="telegram" class="form-control @error('telegram') is-invalid @enderror" 
                        value="{{ old('telegram', $user->telegram) }}" placeholder="@username или ссылка">
                 @error('telegram')
@@ -57,7 +52,7 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Twitch</label>
+                <label class="form-label">Twitch <span class="text-muted small">(необязательно)</span></label>
                 <input type="text" name="twitch" class="form-control @error('twitch') is-invalid @enderror" 
                        value="{{ old('twitch', $user->twitch) }}" placeholder="username или ссылка">
                 @error('twitch')
@@ -101,18 +96,27 @@
                 <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
                     <i class="bi bi-x-lg"></i> Отмена
                 </a>
-                @if(!$user->is_admin)
-                <form method="POST" action="{{ route('admin.users.impersonate', $user) }}" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-warning">
-                        <i class="bi bi-person-circle"></i> Войти как пользователь
-                    </button>
-                </form>
-                @endif
             </div>
         </form>
     </div>
 </div>
+
+@if(!$user->is_admin)
+<div class="card mt-4">
+    <div class="card-body">
+        <h5 class="card-title mb-3">
+            <i class="bi bi-person-circle me-2"></i>Импорсонация
+        </h5>
+        <p class="text-muted mb-3">Войти под этим пользователем не покидая админскую сессию</p>
+        <form method="POST" action="{{ route('admin.users.impersonate', $user) }}">
+            @csrf
+            <button type="submit" class="btn btn-warning">
+                <i class="bi bi-person-circle"></i> Войти как пользователь
+            </button>
+        </form>
+    </div>
+</div>
+@endif
 
 <div class="card mt-4">
     <div class="card-body">

@@ -3,6 +3,18 @@
 @section('title', 'Создать пользователя')
 
 @section('content')
+<div class="mb-4">
+    <a href="{{ route('admin.users.index') }}" class="btn btn-light shadow-sm" style="font-weight: 600;">
+        <i class="bi bi-arrow-left"></i> Назад
+    </a>
+</div>
+
+<div class="page-header">
+    <h2><i class="bi bi-person-plus me-2"></i>Создать пользователя</h2>
+</div>
+    </a>
+</div>
+
 <div class="page-header">
     <h2><i class="bi bi-person-plus me-2"></i>Создать пользователя</h2>
 </div>

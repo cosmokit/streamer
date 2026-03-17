@@ -3,16 +3,12 @@
 @section('title', 'Видеозаписи')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Видеозаписи</h1>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h2 class="mb-0"><i class="bi bi-camera-video me-2"></i>Видеозаписи</h2>
     <a href="{{ route('admin.videos.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Добавить видео
+        <i class="bi bi-plus-lg"></i> Добавить видео
     </a>
 </div>
-
-@if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-@endif
 
 <div class="card">
     <div class="card-body">
@@ -20,59 +16,52 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Название</th>
-                        <th>Ссылка</th>
-                        <th>Длительность</th>
-                        <th>Дата добавления</th>
-                        <th>Действия</th>
+                        <th width="150">Ссылка</th>
+                        <th width="120">Длительность</th>
+                        <th width="150">Дата добавления</th>
+                        <th width="150">Действия</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($videos as $video)
                     <tr>
-                        <td>{{ $video->id }}</td>
                         <td>{{ $video->title }}</td>
                         <td>
                             <a href="{{ $video->url }}" target="_blank" class="text-primary">
-                                <i class="bi bi-youtube"></i> YouTube
+                                <i class="bi bi-link-45deg"></i>
                             </a>
                         </td>
                         <td>{{ $video->duration }}</td>
                         <td>{{ $video->created_at->format('d.m.Y H:i') }}</td>
                         <td>
-                            <a href="{{ route('admin.videos.edit', $video) }}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form action="{{ route('admin.videos.destroy', $video) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                        onclick="return confirm('Удалить это видео?')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ route('admin.videos.edit', $video) }}" class="btn btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="POST" action="{{ route('admin.videos.destroy', $video) }}" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Удалить видео?')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="text-center text-muted">Видео не найдены</td>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            Видео не найдены
+                        </td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
-        <div class="mt-3">
-            {{ $videos->links() }}
-        </div>
-    </div>
-</div>
-
-<div class="mt-3">
-    <div class="alert alert-info">
-        <strong>Всего видео:</strong> {{ $videos->total() }} |
-        <strong>Общая длительность:</strong> {{ number_format($videos->sum('duration_minutes')) }} мин
+        {{ $videos->links() }}
     </div>
 </div>
 @endsection
