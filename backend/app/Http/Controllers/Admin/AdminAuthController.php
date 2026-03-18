@@ -17,11 +17,11 @@ class AdminAuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            "email" => "required|email",
+            "username" => "required|string",
             "password" => "required",
         ]);
 
-        if (Auth::attempt($request->only("email", "password"), $request->boolean("remember"))) {
+        if (Auth::attempt(['name' => $request->username, 'password' => $request->password], $request->boolean("remember"))) {
             $request->session()->regenerate();
 
             if (Auth::user()->is_admin) {
@@ -30,12 +30,12 @@ class AdminAuthController extends Controller
 
             Auth::logout();
             throw ValidationException::withMessages([
-                "email" => "У вас нет прав доступа к админ-панели.",
+                "username" => "У вас нет прав доступа к админ-панели.",
             ]);
         }
 
         throw ValidationException::withMessages([
-            "email" => "Неверные учетные данные.",
+            "username" => "Неверный логин или пароль.",
         ]);
     }
 

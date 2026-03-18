@@ -18,27 +18,26 @@ class DatabaseSeeder extends Seeder
     {
         // Create admin user
         $admin = User::create([
-            'name' => 'Admin',
+            'name' => 'admin',
             'email' => 'admin@streamer.local',
             'password' => Hash::make('admin12345'),
             'is_admin' => true,
         ]);
 
-        // Create demo users
         $user1 = User::create([
-            'name' => 'User 1',
-            'email' => 'user1@streamer.local',
-            'password' => Hash::make('user12345'),
-            'telegram' => '@user1_stream',
-            'twitch' => 'user1_twitch',
+            'name' => 'demo',
+            'email' => 'demo@streamer.local',
+            'password' => Hash::make('demo12345'),
+            'telegram' => '@demo_stream',
+            'twitch' => 'demo_twitch',
         ]);
 
         $user2 = User::create([
-            'name' => 'User 2',
-            'email' => 'user2@streamer.local',
-            'password' => Hash::make('user12345'),
-            'telegram' => '@user2_stream',
-            'twitch' => 'user2_twitch',
+            'name' => 'testuser',
+            'email' => 'test@streamer.local',
+            'password' => Hash::make('test12345'),
+            'telegram' => '@test_stream',
+            'twitch' => 'test_twitch',
         ]);
 
         // Create proxies for user1

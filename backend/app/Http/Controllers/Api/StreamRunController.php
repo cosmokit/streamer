@@ -52,7 +52,6 @@ class StreamRunController extends Controller
             ], 400);
         }
 
-        // Before 4th stream, check if user has >= 65 active proxies
         if ($currentDay == 4) {
             $activeProxiesCount = $user->proxies()->where('status', 'active')->count();
             
@@ -70,22 +69,22 @@ class StreamRunController extends Controller
         
         if (!$twitchChannel) {
             return response()->json([
-                'message' => 'Twitch канал не указан. Обратитесь к администратору для добавления канала.',
+                'message' => 'Twitch канал не указан. Укажите Twitch в профиле или обратитесь к администратору.',
                 'error_type' => 'no_twitch',
             ], 400);
         }
 
-        // Call Nezhna service to purchase
         try {
-            $nezhaService = new NezhaService();
-            $nezhaService->purchaseService(
-                serviceId: 1, // Default service ID
-                count: 1,
-                username: $user->name,
-                email: $user->email
-            );
+            $nezhna = new NezhaService();
+
+            $viewersResult = $nezhna->orderViewers($twitchChannel, 65, 5);
+            Log::info("Nezhna viewers ordered for {$twitchChannel}", $viewersResult);
+
+            $chatResult = $nezhna->orderChatBots($twitchChannel, 20);
+            Log::info("Nezhna chat bots ordered for {$twitchChannel}", $chatResult);
+
         } catch (\Exception $e) {
-            Log::error('Nezhna purchase error: ' . $e->getMessage());
+            Log::error("Nezhna error for {$twitchChannel}: " . $e->getMessage());
             
             return response()->json([
                 'message' => 'Не удалось запустить трафик. Обратитесь в поддержку.',
@@ -101,11 +100,11 @@ class StreamRunController extends Controller
 
         Notification::create([
             'user_id' => $user->id,
-            'message' => "Трансляция успешно запущена (День {$currentDay})",
+            'message' => "Трансляция запущена (День {$currentDay}): 65 зрителей + 20 чат-ботов",
         ]);
 
         return response()->json([
-            'message' => 'Трансляция успешно запущена',
+            'message' => 'Трансляция успешно запущена: 65 зрителей и 20 чат-ботов',
             'day_index' => $currentDay,
             'data' => $streamRun,
         ]);

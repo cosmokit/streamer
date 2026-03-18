@@ -10,7 +10,6 @@ use App\Http\Controllers\Admin\VideoController as AdminVideoController;
 use App\Http\Controllers\Admin\AdminAuthController;
 
 // User auth API routes (используем веб-роуты для сессий!)
-Route::post('/api/register', [\App\Http\Controllers\Api\AuthController::class, 'register'])->name('api.register');
 Route::post('/api/login', [\App\Http\Controllers\Api\AuthController::class, 'login'])->name('api.login');
 Route::post('/api/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout'])->middleware('api.auth')->name('api.logout');
 Route::get('/api/me', [\App\Http\Controllers\Api\AuthController::class, 'me'])->middleware('api.auth')->name('api.me');
@@ -110,8 +109,6 @@ Route::prefix('api')->group(function () {
 // SPA fallback - только для dashboard маршрутов
 // SPA routes - добавляем все маршруты фронтенда
 Route::get('/login', [SpaController::class, 'index']);
-Route::get('/register', [SpaController::class, 'index']);
-Route::get('/forgot-password', [SpaController::class, 'index']);
 Route::get('/dashboard/{any?}', [SpaController::class, 'index'])->where('any', '.*');
 
 // Stop impersonation (доступно для импорсонированных пользователей)

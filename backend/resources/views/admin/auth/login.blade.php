@@ -89,10 +89,10 @@
             @csrf
 
             <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" 
-                       name="email" value="{{ old('email') }}" required autofocus>
-                @error('email')
+                <label for="username" class="form-label">Логин</label>
+                <input id="username" type="text" class="form-control @error('username') is-invalid @enderror" 
+                       name="username" value="{{ old('username') }}" required autofocus>
+                @error('username')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
