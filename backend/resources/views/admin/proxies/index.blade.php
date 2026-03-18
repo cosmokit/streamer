@@ -49,7 +49,7 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>№</th>
                         <th>Пользователь</th>
                         <th>IP адрес</th>
                         <th>Порт</th>
@@ -63,7 +63,7 @@
                 <tbody>
                     @forelse($proxies as $proxy)
                     <tr>
-                        <td>{{ $proxy->id }}</td>
+                        <td>{{ $proxies->firstItem() + $loop->index }}</td>
                         <td>
                             <strong>{{ $proxy->user->name }}</strong>
                         </td>
