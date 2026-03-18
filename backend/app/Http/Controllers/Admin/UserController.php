@@ -211,25 +211,21 @@ class UserController extends Controller
         return back()->with('success', "Создано прокси: {$count}");
     }
 
-    private function generateRealisticProxies($count = 11)
+    private function generateRealisticProxies($count = 10)
     {
-        $ips = [
-            '45.138.74.100', '91.203.15.224', '185.223.95.162', '178.62.85.45',
-            '195.85.59.191', '45.9.74.71', '109.248.6.115', '188.40.181.236',
-            '91.239.207.126', '195.244.43.134', '62.122.184.54'
-        ];
-        
-        $ports = [8080, 3128, 8888, 1080, 8000];
-        $users = ['proxynet', 'streamhub', 'vipzone', 'eliteproxy', 'netstream'];
-        $passes = ['secure_pass_123', 'elite_key_456', 'premium_789', 'vip_access_101', 'stream_key_202'];
+        $ports = [8080, 3128, 8888, 1080, 8000, 9090, 4145, 1081];
+        $prefixes = ['proxy', 'stream', 'vip', 'elite', 'net', 'fast', 'ultra'];
 
         $proxies = [];
-        for ($i = 0; $i < min($count, count($ips)); $i++) {
+        for ($i = 0; $i < $count; $i++) {
+            $host = rand(1, 255) . '.' . rand(0, 255) . '.' . rand(0, 255) . '.' . rand(1, 254);
+            $username = $prefixes[array_rand($prefixes)] . '_' . strtolower(\Illuminate\Support\Str::random(5));
+            $password = \Illuminate\Support\Str::random(12);
             $proxies[] = [
-                'host' => $ips[$i],
-                'port' => $ports[$i % count($ports)],
-                'username' => $users[$i % count($users)],
-                'password' => $passes[$i % count($passes)],
+                'host' => $host,
+                'port' => $ports[array_rand($ports)],
+                'username' => $username,
+                'password' => $password,
             ];
         }
 
