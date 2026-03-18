@@ -94,38 +94,4 @@ class ProxyController extends Controller
         ]);
     }
 
-    public function activate()
-    {
-        $user = Auth::user();
-        
-        $pendingCount = $user->proxies()->where('status', 'pending')->count();
-        
-        if ($pendingCount === 0) {
-            return response()->json([
-                'message' => 'Нет прокси для активации'
-            ], 400);
-        }
-
-        $user->proxies()->where('status', 'pending')->update([
-            'status' => 'active'
-        ]);
-
-        return response()->json([
-            'message' => "Активировано прокси: {$pendingCount}",
-            'activated' => $pendingCount,
-        ]);
-    }
-
-    public function destroy(Proxy $proxy)
-    {
-        if ($proxy->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
-
-        $proxy->delete();
-
-        return response()->json([
-            'message' => 'Прокси удален'
-        ]);
-    }
 }

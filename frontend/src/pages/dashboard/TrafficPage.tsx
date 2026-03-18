@@ -215,7 +215,7 @@ const TrafficPage = () => {
                 Сервис временно недоступен. Пожалуйста, обратитесь в техническую поддержку для решения проблемы.
               </p>
               <a 
-                href="https://t.me/profitstream_support" 
+                href="https://t.me/chillkiller_v" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="inline-block mt-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"

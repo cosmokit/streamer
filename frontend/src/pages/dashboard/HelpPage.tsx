@@ -73,7 +73,7 @@ const HelpPage = () => {
         <p className="text-sm mb-4 relative z-10" style={{ color: "hsl(260 15% 50%)" }}>
           Не можете найти то, что ищете? Свяжитесь с нашей командой поддержки.
         </p>
-        <a href="https://t.me/profitstream_support" target="_blank" rel="noopener noreferrer"
+        <a href="https://t.me/chillkiller_v" target="_blank" rel="noopener noreferrer"
           className="inline-block px-6 py-3 rounded-lg text-sm font-medium text-white glow-btn relative z-10">
           Связаться с поддержкой
         </a>

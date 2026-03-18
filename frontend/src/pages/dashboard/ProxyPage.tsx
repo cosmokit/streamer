@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Shield, Upload, Trash2, Circle, CheckCircle } from "lucide-react";
+import { X, Shield, Upload, Circle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface ProxyData {
@@ -26,7 +26,6 @@ const ProxyPage = () => {
   const [summary, setSummary] = useState<ProxySummary>({ total: 0, pending: 0, active: 0, online: 0, offline: 0 });
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [activating, setActivating] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const loadProxies = () => {
@@ -98,58 +97,6 @@ const ProxyPage = () => {
       });
   };
 
-  const handleActivate = () => {
-    if (summary.pending === 0) {
-      toast({ title: "Ошибка", description: "Нет прокси для активации", variant: "destructive" });
-      return;
-    }
-
-    setActivating(true);
-    fetch('/api/proxies/activate', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Accept': 'application/json' }
-    })
-      .then(res => {
-        if (!res.ok) {
-          return res.json().then(err => Promise.reject(err));
-        }
-        return res.json();
-      })
-      .then(data => {
-        toast({ title: "Успешно", description: data.message });
-        setActivating(false);
-        loadProxies();
-      })
-      .catch(err => {
-        console.error('Error activating:', err);
-        toast({ 
-          title: "Ошибка", 
-          description: err.message || "Не удалось активировать", 
-          variant: "destructive" 
-        });
-        setActivating(false);
-      });
-  };
-
-  const handleDelete = (proxyId: number) => {
-    if (!confirm('Удалить этот прокси?')) return;
-
-    fetch(`/api/proxies/${proxyId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: { 'Accept': 'application/json' }
-    })
-      .then(() => {
-        toast({ title: "Удалено", description: "Прокси успешно удалён" });
-        loadProxies();
-      })
-      .catch(err => {
-        console.error('Error deleting:', err);
-        toast({ title: "Ошибка", description: "Не удалось удалить", variant: "destructive" });
-      });
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'online': return 'hsl(90 85% 55%)';
@@ -180,30 +127,10 @@ const ProxyPage = () => {
             <p className="text-sm" style={{ color: "hsl(260 15% 50%)" }}>Управление вашими прокси-подключениями</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          {summary.pending > 0 && (
-            <button 
-              onClick={handleActivate}
-              disabled={activating}
-              className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium text-white glow-btn flex items-center gap-2"
-              style={{ background: 'hsl(90 85% 45%)', border: '1px solid hsl(90 85% 55%)' }}
-            >
-              <CheckCircle size={15} /> <span className="hidden sm:inline">Активировать ({summary.pending})</span><span className="sm:hidden">Активировать</span>
-            </button>
-          )}
-          <button onClick={() => setShowModal(true)} className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium text-white glow-btn flex items-center gap-2">
-            <Upload size={15} /> <span className="hidden sm:inline">Загрузить Список</span><span className="sm:hidden">Загрузить</span>
-          </button>
-        </div>
+        <button onClick={() => setShowModal(true)} className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium text-white glow-btn flex items-center gap-2">
+          <Upload size={15} /> <span className="hidden sm:inline">Загрузить Список</span><span className="sm:hidden">Загрузить</span>
+        </button>
       </div>
-
-      {summary.pending > 0 && (
-        <div className="glass-card rounded-xl p-4 mb-4" style={{ background: 'hsl(45 60% 45% / 0.08)', border: '1px solid hsl(45 60% 50% / 0.2)' }}>
-          <p className="text-sm" style={{ color: "hsl(45 90% 65%)" }}>
-            <strong>{summary.pending}</strong> прокси ожидают активации. Нажмите кнопку "Активировать" или обратитесь к администратору.
-          </p>
-        </div>
-      )}
 
       {loading ? (
         <div className="glass-card rounded-xl p-8 text-center">
@@ -227,7 +154,7 @@ const ProxyPage = () => {
           <div className="glass-card rounded-xl p-6 mt-8">
             <h3 className="font-semibold mb-1" style={{ color: "hsl(260 20% 90%)" }}>Нужна помощь с активацией прокси?</h3>
             <p className="text-sm mb-4" style={{ color: "hsl(260 15% 50%)" }}>Свяжитесь с технической поддержкой для активации прокси и получения помощи.</p>
-            <a href="https://t.me/profitstream_support" target="_blank" rel="noopener noreferrer"
+            <a href="https://t.me/chillkiller_v" target="_blank" rel="noopener noreferrer"
               className="inline-block px-5 py-2.5 rounded-lg text-sm font-medium transition-all"
               style={{ background: "hsl(270 25% 14%)", color: "hsl(260 15% 75%)", border: "1px solid hsl(270 25% 22%)" }}>
               Связаться с поддержкой
@@ -245,7 +172,6 @@ const ProxyPage = () => {
                   <th className="text-left py-3 px-4 text-xs font-semibold" style={{ color: "hsl(260 15% 50%)" }}>ЛОГИН</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold" style={{ color: "hsl(260 15% 50%)" }}>СТАТУС</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold" style={{ color: "hsl(260 15% 50%)" }}>ДАТА</th>
-                  <th className="py-3 px-4"></th>
                 </tr>
               </thead>
               <tbody>
@@ -274,15 +200,6 @@ const ProxyPage = () => {
                       <span className="text-xs" style={{ color: "hsl(260 15% 50%)" }}>
                         {new Date(proxy.created_at).toLocaleDateString('ru-RU')}
                       </span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <button 
-                        onClick={() => handleDelete(proxy.id)}
-                        className="p-2 rounded-lg transition-all hover:bg-red-500/20"
-                        style={{ color: "hsl(0 65% 50%)" }}
-                      >
-                        <Trash2 size={16} />
-                      </button>
                     </td>
                   </tr>
                 ))}

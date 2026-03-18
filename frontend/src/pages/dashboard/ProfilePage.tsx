@@ -157,12 +157,15 @@ const ProfilePage = () => {
               Полный доступ ко всем инструментам и приоритетная поддержка
             </p>
           </div>
-          <button 
-            className="glow-btn w-full py-2.5 rounded-lg text-sm font-medium relative"
+          <a 
+            href="https://t.me/chillkiller_v"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="glow-btn w-full py-2.5 rounded-lg text-sm font-medium relative block text-center"
             style={{ color: "hsl(var(--primary-foreground))" }}
           >
             Перейти на PRO
-          </button>
+          </a>
         </div>
       </div>
     </div>

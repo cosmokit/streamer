@@ -137,13 +137,27 @@
             <i class="bi bi-hdd-network me-2"></i>Управление прокси
         </h5>
         
-        <div class="mb-4 d-flex gap-2">
+        <div class="mb-4 d-flex gap-2 flex-wrap">
             <a href="{{ route('admin.users.proxies', $user) }}" class="btn btn-primary">
                 <i class="bi bi-list-ul"></i> Просмотр прокси пользователя ({{ $user->proxies()->count() }})
             </a>
-            <a href="{{ route('admin.users.download-proxy-file', $user) }}" class="btn btn-secondary">
-                <i class="bi bi-download"></i> Скачать файл прокси
-            </a>
+            @php
+                $proxyFilePath = storage_path("app/proxy_uploads/{$user->id}/proxies.txt");
+                $hasProxyFile = file_exists($proxyFilePath);
+            @endphp
+            @if($hasProxyFile)
+                <a href="{{ route('admin.users.download-proxy-file', $user) }}" class="btn btn-success">
+                    <i class="bi bi-download"></i> Скачать загруженный файл
+                </a>
+                <span class="align-self-center text-muted small">
+                    <i class="bi bi-check-circle text-success"></i>
+                    Файл загружен {{ date('d.m.Y H:i', filemtime($proxyFilePath)) }}
+                </span>
+            @else
+                <span class="align-self-center text-muted small">
+                    <i class="bi bi-info-circle"></i> Пользователь не загружал файл прокси
+                </span>
+            @endif
         </div>
         
         <hr>

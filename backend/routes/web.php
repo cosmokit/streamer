@@ -20,7 +20,6 @@ Route::middleware('api.auth')->group(function () {
     Route::get('/api/videos', [\App\Http\Controllers\Api\VideoController::class, 'index']);
     Route::get('/api/proxies', [\App\Http\Controllers\Api\ProxyController::class, 'index']);
     Route::post('/api/proxies/upload', [\App\Http\Controllers\Api\ProxyController::class, 'upload']);
-    Route::delete('/api/proxies/{proxy}', [\App\Http\Controllers\Api\ProxyController::class, 'destroy']);
     Route::get('/api/stream-runs', [\App\Http\Controllers\Api\StreamRunController::class, 'index']);
     Route::post('/api/stream-runs', [\App\Http\Controllers\Api\StreamRunController::class, 'store']);
     Route::get('/api/notifications', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
@@ -85,8 +84,6 @@ Route::prefix('api')->group(function () {
     Route::middleware('auth')->group(function () {
         Route::get('/proxies', [\App\Http\Controllers\Api\ProxyController::class, 'index']);
         Route::post('/proxies/upload', [\App\Http\Controllers\Api\ProxyController::class, 'upload']);
-        Route::post('/proxies/activate', [\App\Http\Controllers\Api\ProxyController::class, 'activate']);
-        Route::delete('/proxies/{proxy}', [\App\Http\Controllers\Api\ProxyController::class, 'destroy']);
 
         Route::get('/stream-runs', [\App\Http\Controllers\Api\StreamRunController::class, 'index']);
         Route::post('/stream-runs/start', [\App\Http\Controllers\Api\StreamRunController::class, 'start']);
